@@ -55,25 +55,22 @@ export class CellComponent implements OnInit {
   }
 
   onInputEvent(event: any){
-    console.log("Inside the input event");
-    if(!this.cellInfo.isActive){      
-      this.cellInfo.letter = this.previousValue;
+    if (event.isComposing) return;
+
+    if(!this.cellInfo.isActive){
       this.cellInput.nativeElement.value = this.previousValue;
-      console.log("Cell was inactive, hence returning ");
+      this.cellInfo.letter = this.previousValue;
       return;
     }
 
-    console.log("this.cellInfo.letter ", this.cellInfo.letter);
-    let inputText = this.cellInfo.letter || '';
+    let inputText: string = (event.target as HTMLInputElement).value || '';
     inputText = inputText.toUpperCase();
-    inputText = inputText.charAt(inputText.length - 1); // Keep only the last character
-    
+    inputText = inputText.charAt(inputText.length - 1);
+
     this.cellInput.nativeElement.value = inputText;
     this.cellInfo.letter = inputText;
     this.previousValue = inputText;
     this.cellValueChange.emit(inputText);
-    console.log("inputText ", inputText);
-    console.log("At the end of the fnction");
   }
 
 }

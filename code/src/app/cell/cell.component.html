@@ -1,10 +1,16 @@
 <div>
-    <input type="text" [(ngModel)]="cellInfo.letter" #cellInput
-    (click)="onClickInput()"
-    (input)="onInputEvent($event)"
-    [ngClass]="{ 'cell-active': cellInfo.isActive, 'cell-not-active': !cellInfo.isActive, 'cell-locked': cellInfo.isLocked}"
-    [ngStyle]="{'background': cellInfo.background }"
+    <input
+        type="text"
+        [value]="cellInfo.letter"
+        #cellInput
+        (click)="onClickInput()"
+        (input)="onInputEvent($event)"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="characters"
+        spellcheck="false"
+        [attr.readonly]="cellInfo.isLocked ? '' : null"
+        [ngClass]="{ 'cell-active': cellInfo.isActive, 'cell-not-active': !cellInfo.isActive, 'cell-locked': cellInfo.isLocked }"
+        [ngStyle]="{'background': cellInfo.background}"
     >
 </div>
-<!-- <p>{{cellInfo.letter}} | {{cellInfo.isActive}}</p> -->
-

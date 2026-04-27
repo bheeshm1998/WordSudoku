@@ -1,0 +1,36 @@
+Randomize the initial letters. Put more random letters in it
+
+for boards of any size the board should get properly initialized
+
+bring undo button
+
+do a diagonal check as well
+
+provide functionality for navigating through the cells using keyboard
+
+make the grid 9 x 9
+
+Another variation of sudoku where some letters will be pre-filled and the objective is to fill all the remaining cells such that you make as many words as possible
+
+Make a scoring system based on time taken, number of moves, number of incorrect moves, number of times it became wrong
+let the maximum score be 1000, everyones score will be below that only.
+
+  make it mobile responsive
+
+  bring in more letters in the initializing phase
+
+  handle the case when the meaning of a word could not be found
+  better remove those words whose meanings are not there in the dictionary
+
+  Write the rules of the game at the top of the screen
+
+  There is a bug, if we click on the cell twice, then it does not trigger a change event, also because of that it starts typing in the smaller case
+
+When the person finishes solving the board dont let him change any letter until he clicks on restart button
+put some styling into the blocked cells that tell the user that it cannot be edited.
+
+The scoring system can be made of timing plus some score out of 1000
+
+makeAnArrayOfGoodPositions complete the implementation of this method
+
+

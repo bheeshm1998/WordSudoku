@@ -1,7 +1,7 @@
 export const BOARD_SIZE = 5;
 export const NUM_OF_PREFILLED_CELLS = 10;
 
-export const WORDS_FILE_PATH = 'assets/popular_words.txt';
+export const WORDS_FILE_PATH = 'assets/final_words.txt';
 
 export const GRADIENT: any = {
     leftToRight_0: `linear-gradient(90deg, rgba(255,137,90,1) 0%, rgba(255,148,106,1) 100%)`,

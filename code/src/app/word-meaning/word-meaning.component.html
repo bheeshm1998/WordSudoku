@@ -1,23 +1,26 @@
 <ng-container *ngIf="wordMeaning">
-    <div class="modal">
+    <div class="modal-overlay" (click)="onClickCloseModal()">
+        <div class="modal-card" (click)="$event.stopPropagation()">
 
-        <div class="modal-content">
-            <h2>{{ wordMeaning.word }} </h2>
+            <div class="modal-header">
+                <h2 class="modal-word">{{ wordMeaning.word }}</h2>
+                <button class="close-btn" (click)="onClickCloseModal()" aria-label="Close">&#10005;</button>
+            </div>
 
             <div class="meanings-container">
                 <div class="part-of-speech" *ngFor="let meaning of wordMeaning.meanings">
-                    <p> [{{ meaning.partOfSpeech }}] </p>
-                    <div *ngFor="let definition of meaning.definitions">
-                        <p><strong>Def: </strong>{{ definition.definition }}</p>
-                        <p *ngIf="definition?.example"><strong>Example: </strong>{{ definition.example }}</p>
+                    <p class="pos-label">{{ meaning.partOfSpeech }}</p>
+                    <div class="definition-item" *ngFor="let definition of meaning.definitions">
+                        <p class="definition-text">{{ definition.definition }}</p>
+                        <p *ngIf="definition?.example" class="example-text">"{{ definition.example }}"</p>
                     </div>
                 </div>
             </div>
-            <div class="button-container">
-                <button (click)="onClickCloseModal()">Close</button>
-            </div>
-        </div>
-        <span class="close" id="closeModalBtn" (click)="onClickCloseModal()">&times;</span>
-    </div>
 
+            <div class="modal-footer">
+                <button class="close-modal-btn" (click)="onClickCloseModal()">Close</button>
+            </div>
+
+        </div>
+    </div>
 </ng-container>

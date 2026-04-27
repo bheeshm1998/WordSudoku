@@ -1,69 +1,133 @@
-/* Styles for the modal container */
-.modal {
+.modal-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    inset: 0;
     background-color: rgba(0, 0, 0, 0.5);
-    /* Semi-transparent overlay */
-    border-radius: 2px;
-    box-shadow: 5px 5px 5px grey;
-    overflow: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+    z-index: 1000;
 }
 
-/* Styles for the modal content */
-.modal-content {
-    min-width: 16rem;
-    max-height: 75%;
-    overflow: auto;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: #fff;
-    padding: 20px;
-    border: 1px solid #000;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+.modal-card {
+    background: #ffffff;
+    border-radius: 14px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 420px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
 
-    .meanings-container {
-        overflow-y: auto;
-        height: calc(100% - 100px);
-        margin-bottom: 8px;
-        .part-of-speech {
-            padding: 8px;
-            margin-bottom: 8px;
-        }
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.25rem 0.75rem;
+    border-bottom: 1px solid #e5e7eb;
+    flex-shrink: 0;
 
-        .part-of-speech:nth-child(odd) {
-            background-color: rgb(230, 230, 230);
-        }
-
-        .part-of-speech:nth-child(even) {
-            background-color: rgb(238, 238, 238);
-        }
+    .modal-word {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #1a3a2a;
+        text-transform: uppercase;
+        letter-spacing: 2px;
     }
 
-
-}
-
-/* Styles for the close button */
-.close {
-    font-size: 3rem;
-    position: absolute;
-    top: 0;
-    right: 0;
-    padding: 10px;
-    cursor: pointer;
-}
-
-.button-container {
-    display: flex;
-    justify-content: end;
-
-    button {
-        width: 4.5rem;
-        height: 1.5rem;
+    .close-btn {
+        background: none;
+        border: none;
+        font-size: 1rem;
+        color: #6b7280;
         cursor: pointer;
+        padding: 0.25rem 0.5rem;
+        border-radius: 6px;
+        line-height: 1;
+        transition: background-color 0.15s, color 0.15s;
+        flex-shrink: 0;
+
+        &:hover {
+            background-color: #f3f4f6;
+            color: #111827;
+        }
+    }
+}
+
+.meanings-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.75rem 1.25rem;
+    -webkit-overflow-scrolling: touch;
+}
+
+.part-of-speech {
+    margin-bottom: 1rem;
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+}
+
+.pos-label {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #2d6a4f;
+    margin-bottom: 0.5rem;
+}
+
+.definition-item {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f3f4f6;
+
+    &:last-child {
+        border-bottom: none;
+    }
+}
+
+.definition-text {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.82rem;
+    color: #374151;
+    line-height: 1.6;
+}
+
+.example-text {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.78rem;
+    color: #6b7280;
+    font-style: italic;
+    margin-top: 0.25rem;
+    line-height: 1.5;
+}
+
+.modal-footer {
+    padding: 0.75rem 1.25rem;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: flex-end;
+    flex-shrink: 0;
+
+    .close-modal-btn {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.85rem;
+        font-weight: 600;
+        padding: 0.5rem 1.25rem;
+        background-color: #2d6a4f;
+        color: #ffffff;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background-color 0.15s;
+
+        &:hover {
+            background-color: #1b5e3b;
+        }
     }
 }

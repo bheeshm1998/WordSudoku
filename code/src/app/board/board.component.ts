@@ -24,7 +24,7 @@ export class BoardComponent implements OnInit {
 
   solveStatus: string = "";
 
-  ALL_WORDS: any;
+  ALL_WORDS: Set<string> = new Set();
 
   wordMeaning!: WordMeaning | null;
   disableUserAction: boolean = false;
@@ -48,9 +48,10 @@ export class BoardComponent implements OnInit {
   }
 
   loadWordsFile() {
-    const filePath = WORDS_FILE_PATH;
-    this.fileService.getFileContent(filePath).subscribe(res => {
-      this.ALL_WORDS = res.split("\r\n").sort();
+    this.fileService.getFileContent(WORDS_FILE_PATH).subscribe(res => {
+      this.ALL_WORDS = new Set(
+        res.split(/\r?\n/).map(w => w.trim().toLowerCase()).filter(w => w.length > 0)
+      );
     });
   }
 
@@ -132,7 +133,7 @@ export class BoardComponent implements OnInit {
     let oldTime = lastBest.split(":");
     const currentTime = current.split(":");
     const oldTimeInMillis: number = Number(oldTime[0]) * 60 * 1000 + Number(oldTime[1].split(".")[0]) * 1000 + Number(oldTime[1].split(".")[1]);
-    const currentTimeInMillis: number = Number(currentTime[0]) * 60 * 1000 + Number(currentTime[1].split(".")[0]) * 1000 + Number(currentTime[1].split(".")[0]);
+    const currentTimeInMillis: number = Number(currentTime[0]) * 60 * 1000 + Number(currentTime[1].split(".")[0]) * 1000 + Number(currentTime[1].split(".")[1]);
     if(currentTimeInMillis < oldTimeInMillis){
       return true;
     } else{
@@ -231,7 +232,7 @@ export class BoardComponent implements OnInit {
       }
     } else {
       for (let i = 0; i < BOARD_SIZE; i++) {
-        if (board[i][index].letter === char && !board[index][i].isLocked) {
+        if (board[i][index].letter === char && !board[i][index].isLocked) {
           board[i][index].background = CELL_COLOR.DUPLICATE_CHAR_CELL;
         }
       }
@@ -295,10 +296,7 @@ export class BoardComponent implements OnInit {
   }
 
   wordAlreadyExists(word: string) {
-    word = word.toLowerCase();
-    for (let w of this.ALL_WORDS) {
-      if (word === w) return true;
-    } return false;
+    return this.ALL_WORDS.has(word.toLowerCase());
   }
 
   validateWord(word: string): WordValidation {

@@ -1,1 +1,15 @@
-/* You can add global styles to this file, and also import other style files */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    height: 100%;
+}
+
+body {
+    background-color: #e8f0ea;
+    font-family: "JetBrains Mono", monospace;
+    -webkit-font-smoothing: antialiased;
+}

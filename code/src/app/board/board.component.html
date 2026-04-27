@@ -1,20 +1,29 @@
 <div class="game-board">
-    <div class="game-rules-container">
-        <p>
-        How to play: No two letters in a row or column should repeat. No combination of
-            letters should form a valid word horizontally or vertically.
+
+    <div class="game-header">
+        <h1 class="game-title">Word Sudoku</h1>
+        <p class="game-rules">
+            Fill every cell so no row or column repeats a letter or spells a word in any direction.
         </p>
     </div>
-    <div class="timer-text">
-        <p class="best-time">Best {{ bestScore }} </p> 
-        <p class="current-time">{{timeTaken}}</p>
+
+    <div class="timer-row">
+        <div class="timer-block">
+            <span class="timer-label">BEST</span>
+            <span class="timer-value best-time">{{ bestScore }}</span>
+        </div>
+        <div class="timer-block timer-block--right">
+            <span class="timer-label">TIME</span>
+            <span class="timer-value current-time">{{ timeTaken }}</span>
+        </div>
     </div>
+
     <div [ngClass]="'board'" [class.disable-user-action]="disableUserAction"
-        [ngStyle]="{'grid-template-columns':gridSize}">
+        [ngStyle]="{'grid-template-columns': gridSize}">
         <ng-container *ngFor="let row of board; index as i">
             <ng-container *ngFor="let cell of row; index as j">
                 <div class="cell">
-                    <app-cell (cellClick)="onCellClick( i, j)" [cellInfo]="board[i][j]"
+                    <app-cell (cellClick)="onCellClick(i, j)" [cellInfo]="board[i][j]"
                         (cellValueChange)="onCellValueChange($event, i, j)">
                     </app-cell>
                 </div>
@@ -22,23 +31,19 @@
         </ng-container>
     </div>
 
-    <div class="failure-info">
+    <div class="feedback-area">
         <ng-container *ngIf="failureReason !== ''">
-            <p class="failure-detail">{{ failureDetail }}</p>
-            <button class="meaning-btn" *ngIf="failureReason === 'wordExists'" (click)="onClickSeeMeaning()">See
-                meaning</button>
+            <span class="failure-detail">{{ failureDetail }}</span>
+            <button class="meaning-btn" *ngIf="failureReason === 'wordExists'" (click)="onClickSeeMeaning()">
+                See meaning
+            </button>
+        </ng-container>
+        <ng-container *ngIf="solveStatus !== '' && failureReason === ''">
+            <p class="solve-status" [class.solve-status--success]="solveStatus === 'SUCCESS'">{{ solveStatus }}</p>
         </ng-container>
     </div>
 
-    <div class="result-container">
-        <p class="result-status"> {{ solveStatus }} </p>
-    </div>
+    <button class="restart-btn" (click)="onClickRestart()">New Game</button>
 
-    <div>
-        <button class="restart-btn" (click)="onClickRestart()">
-            Restart
-        </button>
-    </div>
-
-    <app-word-meaning [wordMeaning]="wordMeaning" (closeModal)="onCloseModal()"> </app-word-meaning>
+    <app-word-meaning [wordMeaning]="wordMeaning" (closeModal)="onCloseModal()"></app-word-meaning>
 </div>

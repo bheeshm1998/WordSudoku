@@ -1,17 +1,11 @@
-:root {
-    // --cell-size: 6rem;
-    cursor: none;
-}
-
 $CELL-SIZE: 3.5rem;
-$FONT-SIZE: 2.5rem;
+$FONT-SIZE: 2rem;
 
 .cell-active {
-    border-radius: 5px;
-    border: 2px solid green;
+    border-radius: 6px;
+    border: 2.5px solid #2d6a4f;
     width: $CELL-SIZE;
     height: $CELL-SIZE;
-
     display: flex;
     justify-content: center;
     align-items: center;
@@ -20,49 +14,51 @@ $FONT-SIZE: 2.5rem;
 }
 
 .cell-locked {
-    cursor: default;
-    border-radius: 5px;
+    border-radius: 6px;
     width: $CELL-SIZE;
     height: $CELL-SIZE;
-
     display: flex;
     justify-content: center;
     align-items: center;
     color: white;
+    cursor: default;
 }
 
 .cell-not-active {
-    border-radius: 5px;
+    border-radius: 6px;
+    border: 1.5px solid transparent;
     width: $CELL-SIZE;
     height: $CELL-SIZE;
-
     display: flex;
     justify-content: center;
     align-items: center;
-    cursor: pointer;
-
-}
-
-.cell-text {
-    font-size: $FONT-SIZE;
-    font-family: monospace;
-    margin: 0px;
     cursor: pointer;
 }
 
 input {
     width: $CELL-SIZE;
     height: $CELL-SIZE;
-    border: 0px;
+    border: 0;
     font-size: $FONT-SIZE;
-    font-family: monospace;
-    color: black;
+    font-family: "JetBrains Mono", monospace;
+    font-weight: 600;
+    color: #1a3a2a;
     cursor: pointer;
     text-align: center;
     caret-color: transparent;
     box-sizing: border-box;
-}
+    border-radius: 6px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
 
-input:focus {
-    outline: none;
+    &:focus {
+        outline: none;
+    }
+
+    &[readonly] {
+        cursor: default;
+        color: #ffffff;
+    }
 }
