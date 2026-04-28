@@ -9,7 +9,31 @@ html, body {
 }
 
 body {
-    background-color: #e8f0ea;
+    background: linear-gradient(135deg, #e8f0ea 0%, #d4e4d9 50%, #c8d9cc 100%);
     font-family: "JetBrains Mono", monospace;
     -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+}
+
+::selection {
+    background-color: #2d6a4f;
+    color: #ffffff;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f3f8f4;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #b0c4b8;
+    border-radius: 4px;
+
+    &:hover {
+        background: #8faa96;
+    }
 }

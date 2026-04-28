@@ -67,6 +67,12 @@ export class CellComponent implements OnInit {
     inputText = inputText.toUpperCase();
     inputText = inputText.charAt(inputText.length - 1);
 
+    // Only allow A-Z letters
+    if (!/^[A-Z]$/.test(inputText)) {
+      this.cellInput.nativeElement.value = this.previousValue;
+      return;
+    }
+
     this.cellInput.nativeElement.value = inputText;
     this.cellInfo.letter = inputText;
     this.previousValue = inputText;
