@@ -3,5 +3,5 @@
     justify-content: center;
     align-items: flex-start;
     min-height: 100vh;
-    padding: 1.5rem 1rem;
+    padding: clamp(0.5rem, 2vh, 1.5rem) clamp(0.25rem, 1vw, 1rem);
 }
