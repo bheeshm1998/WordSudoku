@@ -1,11 +1,9 @@
-$CELL-SIZE: clamp(2rem, 12vw, 3.5rem);
-$FONT-SIZE: clamp(1.2rem, 7vw, 2rem);
-
 .cell-active {
     border-radius: 8px;
-    border: 2.5px solid #2d6a4f;
-    width: $CELL-SIZE;
-    height: $CELL-SIZE;
+    border: 3px solid #2d6a4f;
+    width: var(--cell-size, 2.5rem);
+    height: var(--cell-size, 2.5rem);
+    aspect-ratio: 1;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -18,8 +16,10 @@ $FONT-SIZE: clamp(1.2rem, 7vw, 2rem);
 
 .cell-locked {
     border-radius: 8px;
-    width: $CELL-SIZE;
-    height: $CELL-SIZE;
+    border: 2px solid rgba(27, 67, 50, 0.6);
+    width: var(--cell-size, 2.5rem);
+    height: var(--cell-size, 2.5rem);
+    aspect-ratio: 1;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -88,9 +88,10 @@ $FONT-SIZE: clamp(1.2rem, 7vw, 2rem);
 
 .cell-not-active {
     border-radius: 8px;
-    border: 1.5px solid rgba(45, 106, 79, 0.15);
-    width: $CELL-SIZE;
-    height: $CELL-SIZE;
+    border: 2px solid rgba(45, 106, 79, 0.35);
+    width: var(--cell-size, 2.5rem);
+    height: var(--cell-size, 2.5rem);
+    aspect-ratio: 1;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -99,16 +100,17 @@ $FONT-SIZE: clamp(1.2rem, 7vw, 2rem);
     transition: all 0.15s ease;
 
     &:hover {
-        border-color: rgba(45, 106, 79, 0.3);
+        border-color: rgba(45, 106, 79, 0.5);
         background: rgba(255, 255, 255, 0.9);
     }
 }
 
 input {
-    width: $CELL-SIZE;
-    height: $CELL-SIZE;
+    width: var(--cell-size, 2.5rem);
+    height: var(--cell-size, 2.5rem);
+    aspect-ratio: 1;
     border: 0;
-    font-size: $FONT-SIZE;
+    font-size: var(--cell-font-size, 1.2rem);
     font-family: "JetBrains Mono", monospace;
     font-weight: 600;
     color: #1a3a2a;
