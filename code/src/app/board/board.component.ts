@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { BEST_SCORE_DEFAULT_STRING, BOARD_SIZE, CELL_COLOR, FAILURE_INFO, GRADIENT, INITIALIZING_WORD, NUM_OF_PREFILLED_CELLS, START_TIME_TEXT, WORDS_FILE_PATH } from '../constants';
+import { BEST_SCORE_DEFAULT_STRING, BOARD_SIZE, BOARD_SIZES, CELL_COLOR, FAILURE_INFO, GRADIENT, INITIALIZING_WORD, NUM_OF_PREFILLED_CELLS, START_TIME_TEXT, updateBoardConfig, WORDS_FILE_PATH } from '../constants';
 import { Cell, WordMeaning, WordValidation } from '../model';
 import { FileServiceService } from '../services/file-service.service';
 import { DictionaryService } from '../services/dictionary.service';
@@ -34,6 +34,9 @@ export class BoardComponent implements OnInit {
   intervalId: any;
   bestScore: string | null = BEST_SCORE_DEFAULT_STRING;
 
+  availableBoardSizes = BOARD_SIZES;
+  selectedBoardSize: number = BOARD_SIZE;
+
   constructor(private fileService: FileServiceService, private dictionaryService: DictionaryService) {
     
   }
@@ -44,6 +47,20 @@ export class BoardComponent implements OnInit {
     let currentBestScore = localStorage.getItem("bestScore");
     if(currentBestScore != undefined){
       this.bestScore = currentBestScore;
+    }
+  }
+
+  onBoardSizeChange(newSize: number) {
+    if (newSize === this.selectedBoardSize) return;
+    this.selectedBoardSize = newSize;
+    updateBoardConfig(newSize);
+    this.clearTimer();
+    this.initializeTheBoard();
+  }
+
+  clearTimer() {
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
     }
   }
 
@@ -79,6 +96,7 @@ export class BoardComponent implements OnInit {
   }
 
   initializeTheBoard() {
+    this.gridSize = `repeat(${BOARD_SIZE}, 1fr)`;
     this.board = [];
     this.failureDetail = "";
     this.failureReason = "";
@@ -372,12 +390,11 @@ export class BoardComponent implements OnInit {
   }
 
   onClickRestart() {
-    clearInterval(this.intervalId);
-    this.initializeTheBoard();
+    this.clearTimer();
     this.disableUserAction = false;
     this.timeTaken = START_TIME_TEXT;
     this.startTime = Date.now();
-    
+    this.initializeTheBoard();
   }
 
   getWordMeaning(word: string) {

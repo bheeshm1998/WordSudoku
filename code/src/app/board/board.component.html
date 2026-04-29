@@ -7,6 +7,18 @@
         </p>
     </div>
 
+    <div class="size-selector">
+        <span class="size-label">Board Size:</span>
+        <div class="size-options">
+            <button *ngFor="let size of availableBoardSizes"
+                    class="size-btn"
+                    [class.active]="size === selectedBoardSize"
+                    (click)="onBoardSizeChange(size)">
+                {{ size }}x{{ size }}
+            </button>
+        </div>
+    </div>
+
     <div class="timer-row">
         <div class="timer-block">
             <span class="timer-label">BEST</span>
@@ -19,6 +31,9 @@
     </div>
 
     <div [ngClass]="'board'" [class.disable-user-action]="disableUserAction"
+        [class.board-5x5]="selectedBoardSize === 5"
+        [class.board-7x7]="selectedBoardSize === 7"
+        [class.board-9x9]="selectedBoardSize === 9"
         [ngStyle]="{'grid-template-columns': gridSize}">
         <ng-container *ngFor="let row of board; index as i">
             <ng-container *ngFor="let cell of row; index as j">

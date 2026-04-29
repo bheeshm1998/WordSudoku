@@ -1,7 +1,8 @@
 .main-container {
     display: flex;
     justify-content: center;
-    align-items: flex-start;
+    align-items: center;
     min-height: 100vh;
     padding: clamp(0.5rem, 2vh, 1.5rem) clamp(0.25rem, 1vw, 1rem);
+    width: 100%;
 }
