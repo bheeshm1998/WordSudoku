@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { BEST_SCORE_DEFAULT_STRING, BOARD_SIZE, BOARD_SIZES, CELL_COLOR, FAILURE_INFO, GRADIENT, INITIALIZING_WORD, NUM_OF_PREFILLED_CELLS, START_TIME_TEXT, updateBoardConfig, WORDS_FILE_PATH } from '../constants';
 import { Cell, WordMeaning, WordValidation } from '../model';
 import { FileServiceService } from '../services/file-service.service';
@@ -10,7 +10,7 @@ import { getAListOfRandomIndicesDistributedUniformly } from '../utils/utility-me
   templateUrl: './board.component.html',
   styleUrls: ['./board.component.scss']
 })
-export class BoardComponent implements OnInit {
+export class BoardComponent implements OnInit, OnDestroy {
 
   board: Cell[][] = [];
 
@@ -37,21 +37,40 @@ export class BoardComponent implements OnInit {
   availableBoardSizes = BOARD_SIZES;
   selectedBoardSize: number = BOARD_SIZE;
 
+  private currentGameId: string | null = null;
+
   constructor(private fileService: FileServiceService, private dictionaryService: DictionaryService) {
     
   }
 
   ngOnInit(): void {
     this.loadWordsFile();
-    this.initializeTheBoard();
+    const persistedState = this.loadPersistedGameState();
+    if (persistedState && !this.shouldStartNewGame(persistedState)) {
+      this.selectedBoardSize = persistedState.boardSize;
+      updateBoardConfig(persistedState.boardSize);
+      this.restoreGameState(persistedState);
+    } else {
+      this.initializeTheBoard();
+    }
     let currentBestScore = localStorage.getItem("bestScore");
     if(currentBestScore != undefined){
       this.bestScore = currentBestScore;
     }
   }
 
+  ngOnDestroy(): void {
+    this.persistGameState();
+    this.clearTimer();
+  }
+
   onBoardSizeChange(newSize: number) {
     if (newSize === this.selectedBoardSize) return;
+    
+    if (this.currentGameId) {
+      localStorage.removeItem(`gameState_${this.currentGameId}`);
+    }
+    
     this.selectedBoardSize = newSize;
     updateBoardConfig(newSize);
     this.clearTimer();
@@ -100,6 +119,10 @@ export class BoardComponent implements OnInit {
     this.board = [];
     this.failureDetail = "";
     this.failureReason = "";
+    this.currentGameId = this.generateGameId();
+    localStorage.setItem("lastGameId", this.currentGameId);
+    this.disableUserAction = false;
+    this.solveStatus = "";
     for (let i = 0; i < BOARD_SIZE; i++) {
       this.board.push([]);
       for (let j = 0; j < BOARD_SIZE; j++) {
@@ -107,9 +130,9 @@ export class BoardComponent implements OnInit {
       }
     }
     this.fillTheBoardWithAWord(this.shuffleString(INITIALIZING_WORD));
-    setTimeout(() => {
-      this.updateTime();
-    }, 1000);
+    this.startTime = Date.now();
+    this.timeTaken = START_TIME_TEXT;
+    this.startTimerInterval();
   }
 
 
@@ -118,6 +141,7 @@ export class BoardComponent implements OnInit {
     this.failureReason = "";
     this.setDefaultColors();
     this.board[row][col].letter = input;
+    this.persistGameState();
     if (this.checkIfTheBoardIsFullyFilled(this.board)) {
       if (this.checkIfTheBoardIsSolved(this.board)) {
         this.solveStatus = "SUCCESS";
@@ -391,6 +415,9 @@ export class BoardComponent implements OnInit {
 
   onClickRestart() {
     this.clearTimer();
+    if (this.currentGameId) {
+      localStorage.removeItem(`gameState_${this.currentGameId}`);
+    }
     this.disableUserAction = false;
     this.timeTaken = START_TIME_TEXT;
     this.startTime = Date.now();
@@ -471,6 +498,75 @@ export class BoardComponent implements OnInit {
   
       this.timeTaken = `${minutesText}:${secondsText}.${millisText}`;
     }, 100 )
+  }
+
+  private generateGameId(): string {
+    return `game_${this.selectedBoardSize}_${Date.now()}`;
+  }
+
+  private persistGameState(): void {
+    if (!this.currentGameId) return;
+    
+    const gameState = {
+      gameId: this.currentGameId,
+      boardSize: this.selectedBoardSize,
+      board: this.board,
+      timeTaken: this.timeTaken,
+      startTime: this.startTime,
+      disableUserAction: this.disableUserAction,
+      solveStatus: this.solveStatus
+    };
+    localStorage.setItem(`gameState_${this.currentGameId}`, JSON.stringify(gameState));
+  }
+
+  private loadPersistedGameState(): any | null {
+    const lastGameId = localStorage.getItem("lastGameId");
+    if (!lastGameId) return null;
+    
+    const persistedState = localStorage.getItem(`gameState_${lastGameId}`);
+    if (!persistedState) return null;
+    
+    try {
+      return JSON.parse(persistedState);
+    } catch {
+      return null;
+    }
+  }
+
+  private shouldStartNewGame(persistedState: any): boolean {
+    if (!persistedState) return true;
+    if (persistedState.boardSize !== this.selectedBoardSize) return true;
+    if (persistedState.solveStatus === 'SUCCESS') return true;
+    return false;
+  }
+
+  private restoreGameState(persistedState: any): void {
+    this.currentGameId = persistedState.gameId;
+    this.board = persistedState.board;
+    this.timeTaken = persistedState.timeTaken;
+    this.startTime = persistedState.startTime;
+    this.disableUserAction = persistedState.disableUserAction;
+    this.solveStatus = persistedState.solveStatus;
+    
+    this.gridSize = `repeat(${this.selectedBoardSize}, 1fr)`;
+    this.startTimerInterval();
+  }
+
+  private startTimerInterval(): void {
+    this.intervalId = setInterval(() => {
+      const millisElapsed = Date.now() - this.startTime;
+      const secondsElapsed = millisElapsed / 1000;
+      const minutesElapsed = secondsElapsed / 60;
+  
+      const millisText = String(millisElapsed).slice(-3)[0];
+      const secondsText = this.formatNumber(Math.floor(secondsElapsed) % 60, 2);
+      const minutesText = this.formatNumber(Math.floor(minutesElapsed), 2);
+      if (Number(minutesText) >= 60) {
+        clearInterval(this.intervalId);
+      }
+  
+      this.timeTaken = `${minutesText}:${secondsText}.${millisText}`;
+    }, 100);
   }
 
 }
