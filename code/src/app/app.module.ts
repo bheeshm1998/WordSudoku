@@ -9,6 +9,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { WordMeaningComponent } from './word-meaning/word-meaning.component';
 import { FormsModule } from '@angular/forms';
 import { SettingsComponent } from './settings/settings.component';
+import { StatsComponent } from './stats/stats.component';
 
 @NgModule({
   declarations: [
@@ -16,7 +17,8 @@ import { SettingsComponent } from './settings/settings.component';
     BoardComponent,
     CellComponent,
     WordMeaningComponent,
-    SettingsComponent
+    SettingsComponent,
+    StatsComponent
   ],
   imports: [
     BrowserModule,

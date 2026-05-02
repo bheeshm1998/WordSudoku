@@ -5,6 +5,13 @@
         <p class="game-rules">
             Fill every cell so no row or column repeats a letter or spells a word in any direction.
         </p>
+        <button class="stats-btn" (click)="openStats()" title="Statistics">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="20" x2="18" y2="10"></line>
+                <line x1="12" y1="20" x2="12" y2="4"></line>
+                <line x1="6" y1="20" x2="6" y2="14"></line>
+            </svg>
+        </button>
         <button class="settings-btn" (click)="openSettings()" title="Settings">
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="3"></circle>
@@ -112,4 +119,6 @@
     <app-word-meaning [wordMeaning]="wordMeaning" (closeModal)="onCloseModal()"></app-word-meaning>
     
     <app-settings *ngIf="showSettings" (closeModal)="onCloseSettings()"></app-settings>
+    
+    <app-stats *ngIf="showStats" (closeModal)="onCloseStats()"></app-stats>
 </div>

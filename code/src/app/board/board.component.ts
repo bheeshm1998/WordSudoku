@@ -8,6 +8,7 @@ import { DictionaryService } from '../services/dictionary.service';
 import { ConflictDetectionService, Conflict } from '../services/conflict-detection.service';
 import { SettingsService } from '../services/settings.service';
 import { HistoryService } from '../services/history.service';
+import { StatsService } from '../services/stats.service';
 import { getAListOfRandomIndicesDistributedUniformly } from '../utils/utility-methods';
 
 @Component({
@@ -51,6 +52,9 @@ export class BoardComponent implements OnInit, OnDestroy {
   // Settings panel
   showSettings: boolean = false;
   
+  // Stats panel
+  showStats: boolean = false;
+  
   // Conflict detection
   allConflicts: Conflict[] = [];
   currentConflictIndex: number = -1;
@@ -72,7 +76,8 @@ export class BoardComponent implements OnInit, OnDestroy {
     private dictionaryService: DictionaryService,
     private conflictDetectionService: ConflictDetectionService,
     private settingsService: SettingsService,
-    private historyService: HistoryService
+    private historyService: HistoryService,
+    private statsService: StatsService
   ) {}
 
   ngOnInit(): void {
@@ -381,6 +386,15 @@ export class BoardComponent implements OnInit, OnDestroy {
     this.disableUserAction = true;
     clearInterval(this.intervalId);
     this.updateTheScoresData();
+    this.recordSolveStats();
+  }
+
+  private recordSolveStats(): void {
+    this.statsService.recordSolve(
+      this.selectedBoardSize,
+      this.selectedDifficulty,
+      this.timeTaken
+    );
   }
 
   checkIfRecordBroke(lastBest: string, current: string): boolean{
@@ -661,6 +675,15 @@ export class BoardComponent implements OnInit, OnDestroy {
 
   onCloseSettings(): void {
     this.showSettings = false;
+  }
+
+  // Stats panel methods
+  openStats(): void {
+    this.showStats = true;
+  }
+
+  onCloseStats(): void {
+    this.showStats = false;
   }
 
   shuffleString(inputString: string): string {
