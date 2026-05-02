@@ -38,6 +38,7 @@ export class BoardComponent implements OnInit, OnDestroy {
   startTime = Date.now();
   intervalId: any;
   bestScore: string | null = BEST_SCORE_DEFAULT_STRING;
+  showNewBestIndicator: boolean = false;
 
   availableBoardSizes = BOARD_SIZES;
   selectedBoardSize: number = BOARD_SIZE;
@@ -86,10 +87,8 @@ export class BoardComponent implements OnInit, OnDestroy {
     } else {
       this.initializeTheBoard();
     }
-    let currentBestScore = localStorage.getItem("bestScore");
-    if(currentBestScore != undefined){
-      this.bestScore = currentBestScore;
-    }
+    this.loadBestScores();
+    this.updateBestScoreForCurrentConfig();
 
     // Subscribe to settings changes
     this.settingsSubscription = this.settingsService.settings$.subscribe(settings => {
@@ -153,6 +152,7 @@ export class BoardComponent implements OnInit, OnDestroy {
     this.persistSettings();
     updateBoardConfig(this.selectedBoardSize, this.selectedDifficulty);
     this.clearTimer();
+    this.updateBestScoreForCurrentConfig();
     this.initializeTheBoard();
   }
 
@@ -166,6 +166,7 @@ export class BoardComponent implements OnInit, OnDestroy {
     this.selectedBoardSize = newSize;
     updateBoardConfig(newSize, this.selectedDifficulty);
     this.clearTimer();
+    this.updateBestScoreForCurrentConfig();
     this.initializeTheBoard();
   }
 
@@ -380,19 +381,6 @@ export class BoardComponent implements OnInit, OnDestroy {
     this.disableUserAction = true;
     clearInterval(this.intervalId);
     this.updateTheScoresData();
-  }
-
-  updateTheScoresData(){
-    let lastBest = localStorage.getItem("bestScore");
-    if(lastBest){
-      let recordBroken = this.checkIfRecordBroke(lastBest, this.timeTaken);
-      if(recordBroken == true){
-        localStorage.setItem("bestScore", this.timeTaken);
-      }
-    } else{
-      localStorage.setItem("bestScore", this.timeTaken);
-    }
-    this.bestScore = localStorage.getItem("bestScore");
   }
 
   checkIfRecordBroke(lastBest: string, current: string): boolean{
@@ -877,6 +865,69 @@ export class BoardComponent implements OnInit, OnDestroy {
       } else {
         this.startStrictModeFeedback();
       }
+    }
+  }
+
+  // Best score management methods
+  private getBestScoreKey(): string {
+    return `${this.selectedBoardSize}_${this.selectedDifficulty}`;
+  }
+
+  private loadBestScores(): void {
+    const stored = localStorage.getItem('wordSudoku_bestScores');
+    if (!stored) {
+      // Migrate legacy bestScore if exists
+      const legacyScore = localStorage.getItem('bestScore');
+      if (legacyScore) {
+        const bestScores: Record<string, string> = {};
+        bestScores[this.getBestScoreKey()] = legacyScore;
+        localStorage.setItem('wordSudoku_bestScores', JSON.stringify(bestScores));
+      }
+    }
+  }
+
+  updateBestScoreForCurrentConfig(): void {
+    const key = this.getBestScoreKey();
+    const stored = localStorage.getItem('wordSudoku_bestScores');
+    let bestScores: Record<string, string> = {};
+    
+    if (stored) {
+      try {
+        bestScores = JSON.parse(stored);
+      } catch (e) {
+        bestScores = {};
+      }
+    }
+    
+    this.bestScore = bestScores[key] || BEST_SCORE_DEFAULT_STRING;
+  }
+
+  updateTheScoresData(): void {
+    const key = this.getBestScoreKey();
+    const stored = localStorage.getItem('wordSudoku_bestScores');
+    let bestScores: Record<string, string> = {};
+    
+    if (stored) {
+      try {
+        bestScores = JSON.parse(stored);
+      } catch (e) {
+        bestScores = {};
+      }
+    }
+    
+    const currentBest = bestScores[key];
+    if (!currentBest || this.checkIfRecordBroke(currentBest, this.timeTaken)) {
+      bestScores[key] = this.timeTaken;
+      localStorage.setItem('wordSudoku_bestScores', JSON.stringify(bestScores));
+      this.bestScore = this.timeTaken;
+      this.showNewBestIndicator = true;
+      
+      // Auto-hide the indicator after 3 seconds
+      setTimeout(() => {
+        this.showNewBestIndicator = false;
+      }, 3000);
+    } else {
+      this.bestScore = currentBest;
     }
   }
 

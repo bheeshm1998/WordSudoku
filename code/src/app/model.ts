@@ -31,3 +31,8 @@ export interface Definition{
     definition: string;
     example: string;
 }
+
+// Key for localStorage: format is "boardSize_difficulty" (e.g., "5_easy")
+export interface BestScores {
+    [key: string]: string;
+}

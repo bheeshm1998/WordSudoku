@@ -41,6 +41,7 @@
         <div class="timer-block">
             <span class="timer-label">BEST</span>
             <span class="timer-value best-time">{{ bestScore }}</span>
+            <span *ngIf="showNewBestIndicator" class="new-best-indicator">New best!</span>
         </div>
         <div class="timer-block timer-block--right">
             <span class="timer-label">TIME</span>
