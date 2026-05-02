@@ -49,12 +49,22 @@ export class CellComponent implements OnInit {
   // }
 
   onClickInput(){
+    // Prevent any interaction with locked cells
+    if (this.cellInfo.isLocked) {
+      return;
+    }
     this.cellClick.emit({row: this.cellInfo.row, col: this.cellInfo.col});
     this.cellInput.nativeElement.setSelectionRange(this.cellInput.nativeElement.value.length, this.cellInput.nativeElement.value.length);
     // so that the cursor always is at the end of the input text
   }
 
   onInputEvent(event: any){
+    // Prevent any input on locked cells
+    if (this.cellInfo.isLocked) {
+      event.preventDefault();
+      return;
+    }
+
     if (event.isComposing) return;
 
     if(!this.cellInfo.isActive){

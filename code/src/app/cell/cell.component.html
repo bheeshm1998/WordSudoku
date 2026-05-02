@@ -10,7 +10,12 @@
         autocapitalize="characters"
         spellcheck="false"
         [attr.readonly]="cellInfo.isLocked ? '' : null"
-        [ngClass]="{ 'cell-active': cellInfo.isActive, 'cell-not-active': !cellInfo.isActive, 'cell-locked': cellInfo.isLocked }"
+        [ngClass]="{
+            'cell-active': cellInfo.isActive,
+            'cell-not-active': !cellInfo.isActive,
+            'cell-locked': cellInfo.isLocked,
+            'cell-user-filled': cellInfo.letter && !cellInfo.isLocked
+        }"
         [ngStyle]="{'background': cellInfo.background}"
     >
 </div>
