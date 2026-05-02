@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { BEST_SCORE_DEFAULT_STRING, BOARD_SIZE, BOARD_SIZES, CELL_COLOR, FAILURE_INFO, GRADIENT, INITIALIZING_WORD, NUM_OF_PREFILLED_CELLS, START_TIME_TEXT, updateBoardConfig, WORDS_FILE_PATH } from '../constants';
 import { Cell, WordMeaning, WordValidation } from '../model';
@@ -6,6 +6,7 @@ import { FileServiceService } from '../services/file-service.service';
 import { DictionaryService } from '../services/dictionary.service';
 import { ConflictDetectionService, Conflict } from '../services/conflict-detection.service';
 import { SettingsService } from '../services/settings.service';
+import { HistoryService } from '../services/history.service';
 import { getAListOfRandomIndicesDistributedUniformly } from '../utils/utility-methods';
 
 @Component({
@@ -56,11 +57,17 @@ export class BoardComponent implements OnInit, OnDestroy {
   selectedRow: number = -1;
   selectedCol: number = -1;
 
+  // Undo/Redo state
+  canUndo: boolean = false;
+  canRedo: boolean = false;
+  private historySubscription?: Subscription;
+
   constructor(
     private fileService: FileServiceService, 
     private dictionaryService: DictionaryService,
     private conflictDetectionService: ConflictDetectionService,
-    private settingsService: SettingsService
+    private settingsService: SettingsService,
+    private historyService: HistoryService
   ) {}
 
   ngOnInit(): void {
@@ -97,6 +104,14 @@ export class BoardComponent implements OnInit, OnDestroy {
         }
       }
     });
+
+    // Subscribe to history state changes
+    this.historySubscription = this.historyService.canUndo$.subscribe(canUndo => {
+      this.canUndo = canUndo;
+    });
+    this.historyService.canRedo$.subscribe(canRedo => {
+      this.canRedo = canRedo;
+    });
   }
 
   ngOnDestroy(): void {
@@ -104,6 +119,9 @@ export class BoardComponent implements OnInit, OnDestroy {
     this.clearTimer();
     if (this.settingsSubscription) {
       this.settingsSubscription.unsubscribe();
+    }
+    if (this.historySubscription) {
+      this.historySubscription.unsubscribe();
     }
   }
 
@@ -188,6 +206,12 @@ export class BoardComponent implements OnInit, OnDestroy {
     this.solveStatus = "";
     this.clearStrictModeState();
     this.assistModeEnabled = this.settingsService.isAssistModeEnabled();
+    
+    // Clear history when starting a new game
+    this.historyService.clear();
+    this.canUndo = false;
+    this.canRedo = false;
+    
     for (let i = 0; i < BOARD_SIZE; i++) {
       this.board.push([]);
       for (let j = 0; j < BOARD_SIZE; j++) {
@@ -202,13 +226,29 @@ export class BoardComponent implements OnInit, OnDestroy {
 
 
   onCellValueChange(input: string, row: number, col: number) {
+    // Skip recording changes for locked cells
+    if (this.board[row][col].isLocked) {
+      return;
+    }
+
     this.solveStatus = "";
     this.failureReason = "";
     this.failureDetail = "";
     this.setDefaultColors();
     this.clearAllConflictHighlights();
+    
+    // Record the change in history before applying the new value
+    const previousLetter = this.board[row][col].letter;
     this.board[row][col].letter = input;
     this.persistGameState();
+
+    // Record to history for undo/redo (only if value actually changed)
+    this.historyService.recordChange({
+      row,
+      col,
+      previousLetter,
+      newLetter: input
+    });
 
     if (this.assistModeEnabled) {
       // Assist Mode: show real-time conflict feedback
@@ -726,6 +766,82 @@ export class BoardComponent implements OnInit, OnDestroy {
   
       this.timeTaken = `${minutesText}:${secondsText}.${millisText}`;
     }, 100);
+  }
+
+  // Keyboard shortcuts for undo/redo
+  @HostListener('window:keydown', ['$event'])
+  handleKeyboardShortcut(event: KeyboardEvent): void {
+    // Check for Cmd/Ctrl key
+    const isModifierPressed = event.ctrlKey || event.metaKey;
+    
+    if (isModifierPressed) {
+      // Undo: Cmd/Ctrl + Z
+      if (event.key === 'z' && !event.shiftKey) {
+        event.preventDefault();
+        this.performUndo();
+      }
+      // Redo: Cmd/Ctrl + Shift + Z OR Cmd/Ctrl + Y
+      else if ((event.key === 'z' && event.shiftKey) || event.key === 'y') {
+        event.preventDefault();
+        this.performRedo();
+      }
+    }
+  }
+
+  performUndo(): void {
+    if (!this.canUndo || this.disableUserAction) {
+      return;
+    }
+
+    const entry = this.historyService.undo();
+    if (entry) {
+      // Restore the previous letter
+      this.board[entry.row][entry.col].letter = entry.previousLetter;
+      this.persistGameState();
+      
+      // Re-evaluate conflicts based on current assist mode setting
+      this.reEvaluateConflicts();
+    }
+  }
+
+  performRedo(): void {
+    if (!this.canRedo || this.disableUserAction) {
+      return;
+    }
+
+    const entry = this.historyService.redo();
+    if (entry) {
+      // Restore the new letter
+      this.board[entry.row][entry.col].letter = entry.newLetter;
+      this.persistGameState();
+      
+      // Re-evaluate conflicts based on current assist mode setting
+      this.reEvaluateConflicts();
+    }
+  }
+
+  private reEvaluateConflicts(): void {
+    // Clear existing feedback
+    this.solveStatus = "";
+    this.failureReason = "";
+    this.failureDetail = "";
+    this.foundWord = "";
+    this.setDefaultColors();
+    this.clearAllConflictHighlights();
+    this.clearStrictModeState();
+
+    if (this.assistModeEnabled) {
+      // Assist Mode: show all conflicts immediately
+      this.updateConflictHighlights();
+    } else if (this.checkIfTheBoardIsFullyFilled(this.board)) {
+      // Strict Mode: check if solved or show first conflict
+      if (this.checkIfTheBoardIsSolved(this.board)) {
+        this.solveStatus = "SUCCESS";
+        this.onBoardSuccessfullCompletion();
+      } else {
+        this.startStrictModeFeedback();
+      }
+    }
   }
 
 }

@@ -52,6 +52,31 @@
         </ng-container>
     </div>
 
+    <div class="undo-redo-row">
+        <button class="undo-redo-btn" 
+                [class.disabled]="!canUndo" 
+                [disabled]="!canUndo"
+                (click)="performUndo()"
+                title="Undo (Ctrl+Z)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 7v6h6"></path>
+                <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path>
+            </svg>
+            <span>Undo</span>
+        </button>
+        <button class="undo-redo-btn" 
+                [class.disabled]="!canRedo" 
+                [disabled]="!canRedo"
+                (click)="performRedo()"
+                title="Redo (Ctrl+Shift+Z)">
+            <span>Redo</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 7v6h-6"></path>
+                <path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7"></path>
+            </svg>
+        </button>
+    </div>
+
     <div class="feedback-area">
         <ng-container *ngIf="failureReason !== '' && failureDetail">
             <span class="failure-detail">{{ failureDetail }}</span>
