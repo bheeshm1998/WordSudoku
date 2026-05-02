@@ -240,3 +240,105 @@ input {
         box-shadow: 0 0 0 5px rgba(230, 57, 70, 0.15), 0 2px 12px rgba(230, 57, 70, 0.25);
     }
 }
+
+// COLORBLIND MODE STYLES
+
+// Locked cell with colorblind mode - add subtle dot indicator
+.cell-colorblind-locked {
+    position: relative;
+    
+    input {
+        position: relative;
+    }
+    
+    &::before {
+        content: '';
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.7);
+        pointer-events: none;
+        z-index: 3;
+    }
+}
+
+// Conflict cell with colorblind mode - add diagonal stripe pattern
+.cell-colorblind-conflict {
+    position: relative;
+    
+    input {
+        position: relative;
+    }
+    
+    &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 3px,
+            rgba(230, 57, 70, 0.3) 3px,
+            rgba(230, 57, 70, 0.3) 6px
+        );
+        pointer-events: none;
+        border-radius: 6px;
+        z-index: 1;
+    }
+    
+    &.cell-active {
+        &::after {
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 3px,
+                rgba(230, 57, 70, 0.4) 3px,
+                rgba(230, 57, 70, 0.4) 6px
+            );
+        }
+    }
+}
+
+// Visual indicators for colorblind mode (rendered as separate elements)
+.colorblind-indicator {
+    position: absolute;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.locked-indicator {
+    top: 4px;
+    right: 4px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.7);
+}
+
+.conflict-indicator {
+    top: 2px;
+    right: 2px;
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 8px solid #e63946;
+    background: transparent;
+}
+
+// FOCUS RING - visible during keyboard interaction
+// Using outline (not box-shadow) for screen reader clarity
+input:focus-visible {
+    outline: 3px solid #2d6a4f;
+    outline-offset: 2px;
+}
+
+// Cell with focus - shows visible focus ring
+.cell-active input:focus-visible,
+.cell-not-active input:focus-visible {
+    outline: 3px solid #2d6a4f;
+    outline-offset: 2px;
+}

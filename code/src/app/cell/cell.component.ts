@@ -1,5 +1,6 @@
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { Cell } from '../model';
+import { SettingsService } from '../services/settings.service';
 
 @Component({
   selector: 'app-cell',
@@ -13,15 +14,22 @@ export class CellComponent implements OnInit {
   @Input("cellInfo") cellInfo :Cell = {row: -1, col: -1, letter: "", isActive: false, isLocked: false, background:""};
   @Output() cellValueChange = new EventEmitter<string>();
   @Output() cellClick = new EventEmitter<{row: number, col: number}>();
+  @Output() cellFocused = new EventEmitter<{row: number, col: number}>();
 
   @ViewChild("cellInput") cellInput!: ElementRef;
 
   previousValue: string = "";
+  colorblindModeEnabled: boolean = false;
 
-  constructor() { 
+  constructor(private settingsService: SettingsService) { 
   }
 
   ngOnInit(): void {
+    this.colorblindModeEnabled = this.settingsService.isColorblindModeEnabled();
+  }
+
+  onCellFocus(): void {
+    this.cellFocused.emit({row: this.cellInfo.row, col: this.cellInfo.col});
   }
 
   // onKeyPress(event: any){
@@ -87,6 +95,26 @@ export class CellComponent implements OnInit {
     this.cellInfo.letter = inputText;
     this.previousValue = inputText;
     this.cellValueChange.emit(inputText);
+  }
+
+  getAriaLabel(): string {
+    const row = this.cellInfo.row + 1;
+    const col = this.cellInfo.col + 1;
+    let label = `Row ${row}, Column ${col}`;
+    
+    if (this.cellInfo.isLocked) {
+      label += `, locked, letter ${this.cellInfo.letter || 'empty'}`;
+    } else if (this.cellInfo.letter) {
+      label += `, letter ${this.cellInfo.letter}`;
+    } else {
+      label += ', empty';
+    }
+    
+    if (this.cellInfo.hasConflict) {
+      label += ', conflict';
+    }
+    
+    return label;
   }
 
 }

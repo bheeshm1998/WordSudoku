@@ -4,11 +4,13 @@ import { BehaviorSubject } from 'rxjs';
 export interface Settings {
   assistModeEnabled: boolean;
   soundEnabled: boolean;
+  colorblindModeEnabled: boolean;
 }
 
 const DEFAULT_SETTINGS: Settings = {
   assistModeEnabled: true,
-  soundEnabled: false
+  soundEnabled: false,
+  colorblindModeEnabled: false
 };
 
 const STORAGE_KEY = 'wordSudoku_settings';
@@ -90,6 +92,32 @@ export class SettingsService {
       const updated: Settings = {
         ...current,
         soundEnabled: enabled
+      };
+      this.settingsSubject.next(updated);
+      this.saveSettings(updated);
+    }
+  }
+
+  isColorblindModeEnabled(): boolean {
+    return this.settingsSubject.getValue().colorblindModeEnabled;
+  }
+
+  toggleColorblindMode(): void {
+    const current = this.settingsSubject.getValue();
+    const updated: Settings = {
+      ...current,
+      colorblindModeEnabled: !current.colorblindModeEnabled
+    };
+    this.settingsSubject.next(updated);
+    this.saveSettings(updated);
+  }
+
+  setColorblindMode(enabled: boolean): void {
+    const current = this.settingsSubject.getValue();
+    if (current.colorblindModeEnabled !== enabled) {
+      const updated: Settings = {
+        ...current,
+        colorblindModeEnabled: enabled
       };
       this.settingsSubject.next(updated);
       this.saveSettings(updated);

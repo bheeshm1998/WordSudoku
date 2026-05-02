@@ -5,11 +5,14 @@
         #cellInput
         (click)="onClickInput()"
         (input)="onInputEvent($event)"
+        (focus)="onCellFocus()"
         autocomplete="off"
         autocorrect="off"
         autocapitalize="characters"
         spellcheck="false"
         [attr.readonly]="cellInfo.isLocked ? '' : null"
+        [attr.aria-label]="getAriaLabel()"
+        role="gridcell"
         [ngClass]="{
             'cell-active': cellInfo.isActive,
             'cell-not-active': !cellInfo.isActive,
@@ -17,8 +20,14 @@
             'cell-user-filled': cellInfo.letter && !cellInfo.isLocked,
             'cell-conflict': cellInfo.hasConflict,
             'cell-row-highlight': cellInfo.isInSelectedRow && !cellInfo.isActive,
-            'cell-col-highlight': cellInfo.isInSelectedCol && !cellInfo.isActive
+            'cell-col-highlight': cellInfo.isInSelectedCol && !cellInfo.isActive,
+            'cell-colorblind-locked': cellInfo.isLocked && colorblindModeEnabled,
+            'cell-colorblind-conflict': cellInfo.hasConflict && colorblindModeEnabled
         }"
         [ngStyle]="{'background': cellInfo.background}"
     >
 </div>
+<!-- Visual indicator for colorblind mode - locked cells -->
+<span *ngIf="cellInfo.isLocked && colorblindModeEnabled" class="colorblind-indicator locked-indicator" aria-hidden="true"></span>
+<!-- Visual indicator for colorblind mode - conflict cells -->
+<span *ngIf="cellInfo.hasConflict && colorblindModeEnabled" class="colorblind-indicator conflict-indicator" aria-hidden="true"></span>

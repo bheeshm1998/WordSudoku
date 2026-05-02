@@ -5,14 +5,14 @@
         <p class="game-rules">
             Fill every cell so no row or column repeats a letter or spells a word in any direction.
         </p>
-        <button class="stats-btn" (click)="openStats()" title="Statistics">
+        <button class="stats-btn" (click)="openStats()" title="Statistics" aria-label="Open statistics">
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="18" y1="20" x2="18" y2="10"></line>
                 <line x1="12" y1="20" x2="12" y2="4"></line>
                 <line x1="6" y1="20" x2="6" y2="14"></line>
             </svg>
         </button>
-        <button class="settings-btn" (click)="openSettings()" title="Settings">
+        <button class="settings-btn" (click)="openSettings()" title="Settings" aria-label="Open settings">
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="3"></circle>
                 <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
@@ -26,7 +26,8 @@
             <button *ngFor="let size of availableBoardSizes"
                     class="size-btn"
                     [class.active]="size === selectedBoardSize"
-                    (click)="onBoardSizeChange(size)">
+                    (click)="onBoardSizeChange(size)"
+                    [attr.aria-label]="size + 'x' + size + ' board'">
                 {{ size }}x{{ size }}
             </button>
         </div>
@@ -38,7 +39,8 @@
             <button *ngFor="let diff of availableDifficulties"
                     class="difficulty-btn"
                     [class.active]="diff === selectedDifficulty"
-                    (click)="onDifficultyChange(diff)">
+                    (click)="onDifficultyChange(diff)"
+                    [attr.aria-label]="diff + ' difficulty'">
                 {{ diff }}
             </button>
         </div>
@@ -61,12 +63,15 @@
         [class.board-7x7]="selectedBoardSize === 7"
         [class.board-9x9]="selectedBoardSize === 9"
         [class.completion-animation]="showCompletionAnimation"
+        role="grid"
+        aria-label="Word Sudoku game board"
         [ngStyle]="{'grid-template-columns': gridSize}">
         <ng-container *ngFor="let row of board; index as i">
             <ng-container *ngFor="let cell of row; index as j">
-                <div class="cell">
+                <div class="cell" [attr.data-row]="i" [attr.data-col]="j">
                     <app-cell (cellClick)="onCellClick(i, j)" [cellInfo]="board[i][j]"
-                        (cellValueChange)="onCellValueChange($event, i, j)">
+                        (cellValueChange)="onCellValueChange($event, i, j)"
+                        (cellFocused)="onCellFocused(i, j)">
                     </app-cell>
                 </div>
             </ng-container>
@@ -131,7 +136,7 @@
         </ng-container>
     </div>
 
-    <button class="restart-btn" (click)="onClickRestart()">New Game</button>
+    <button class="restart-btn" (click)="onClickRestart()" aria-label="Start new game">New Game</button>
     
     <!-- Share button - only visible after puzzle is solved -->
     <button *ngIf="solveStatus === 'SUCCESS'" class="share-btn" (click)="onClickShare()">

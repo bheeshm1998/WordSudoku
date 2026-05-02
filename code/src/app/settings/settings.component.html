@@ -2,7 +2,7 @@
     <div class="settings-panel">
         <div class="settings-header">
             <h2>Settings</h2>
-            <button class="close-btn" (click)="onClose()">
+            <button class="close-btn" (click)="onClose()" aria-label="Close settings">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="18" y1="6" x2="6" y2="18"></line>
                     <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -24,7 +24,7 @@
                     </span>
                 </div>
                 <label class="toggle-switch">
-                    <input type="checkbox" [checked]="assistModeEnabled" (change)="onToggleAssistMode()">
+                    <input type="checkbox" [checked]="assistModeEnabled" (change)="onToggleAssistMode()" aria-label="Toggle assist mode">
                     <span class="slider"></span>
                 </label>
             </div>
@@ -44,7 +44,27 @@
                     </span>
                 </div>
                 <label class="toggle-switch">
-                    <input type="checkbox" [checked]="soundEnabled" (change)="onToggleSound()">
+                    <input type="checkbox" [checked]="soundEnabled" (change)="onToggleSound()" aria-label="Toggle sound effects">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="setting-divider"></div>
+
+            <div class="setting-item">
+                <div class="setting-info">
+                    <span class="setting-label">Colorblind Mode</span>
+                    <span class="setting-description">
+                        <ng-container *ngIf="colorblindModeEnabled">
+                            Visual patterns help identify cell states
+                        </ng-container>
+                        <ng-container *ngIf="!colorblindModeEnabled">
+                            Color-only cell indicators
+                        </ng-container>
+                    </span>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" [checked]="colorblindModeEnabled" (change)="onToggleColorblindMode()" aria-label="Toggle colorblind mode">
                     <span class="slider"></span>
                 </label>
             </div>

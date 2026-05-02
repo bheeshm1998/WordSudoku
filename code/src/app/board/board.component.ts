@@ -100,6 +100,11 @@ export class BoardComponent implements OnInit, OnDestroy {
   showCopiedToast: boolean = false;
   private toastTimeoutId: any;
 
+  // Keyboard navigation state
+  focusedRow: number = -1;
+  focusedCol: number = -1;
+  private validLetters: Set<string> = new Set();
+
   constructor(
     private fileService: FileServiceService, 
     private dictionaryService: DictionaryService,
@@ -412,6 +417,8 @@ export class BoardComponent implements OnInit, OnDestroy {
     // Update selected row/col tracking
     this.selectedRow = row;
     this.selectedCol = col;
+    this.focusedRow = row;
+    this.focusedCol = col;
 
     // Clear previous row/col highlights first
     for (let i = 0; i < BOARD_SIZE; i++) {
@@ -450,6 +457,85 @@ export class BoardComponent implements OnInit, OnDestroy {
     }
   }
 
+  onCellFocused(row: number, col: number): void {
+    this.focusedRow = row;
+    this.focusedCol = col;
+  }
+
+  moveFocusToCell(row: number, col: number): void {
+    if (row < 0 || row >= BOARD_SIZE || col < 0 || col >= BOARD_SIZE) {
+      return;
+    }
+    this.onCellClick(row, col);
+    
+    // Focus the cell input element
+    setTimeout(() => {
+      const cellInput = document.querySelector(`[data-row="${row}"][data-col="${col}"] input`);
+      if (cellInput) {
+        (cellInput as HTMLInputElement).focus();
+      }
+    }, 0);
+  }
+
+  isValidLetter(letter: string): boolean {
+    return this.validLetters.has(letter.toUpperCase());
+  }
+
+  private moveFocus(direction: 'up' | 'down' | 'left' | 'right'): void {
+    if (this.focusedRow < 0 || this.focusedCol < 0) {
+      // Initialize to first non-locked cell if no focus
+      for (let i = 0; i < BOARD_SIZE; i++) {
+        for (let j = 0; j < BOARD_SIZE; j++) {
+          if (!this.board[i][j].isLocked) {
+            this.moveFocusToCell(i, j);
+            return;
+          }
+        }
+      }
+      return;
+    }
+
+    let newRow = this.focusedRow;
+    let newCol = this.focusedCol;
+
+    switch (direction) {
+      case 'up':
+        newRow = this.focusedRow - 1;
+        break;
+      case 'down':
+        newRow = this.focusedRow + 1;
+        break;
+      case 'left':
+        newCol = this.focusedCol - 1;
+        break;
+      case 'right':
+        newCol = this.focusedCol + 1;
+        break;
+    }
+
+    // Wrap around logic
+    if (newRow < 0) newRow = BOARD_SIZE - 1;
+    if (newRow >= BOARD_SIZE) newRow = 0;
+    if (newCol < 0) newCol = BOARD_SIZE - 1;
+    if (newCol >= BOARD_SIZE) newCol = 0;
+
+    this.moveFocusToCell(newRow, newCol);
+  }
+
+  private fillFocusedCell(letter: string): void {
+    if (this.focusedRow < 0 || this.focusedCol < 0) return;
+    if (this.board[this.focusedRow][this.focusedCol].isLocked) return;
+    
+    this.onCellValueChange(letter.toUpperCase(), this.focusedRow, this.focusedCol);
+  }
+
+  private clearFocusedCell(): void {
+    if (this.focusedRow < 0 || this.focusedCol < 0) return;
+    if (this.board[this.focusedRow][this.focusedCol].isLocked) return;
+    
+    this.onCellValueChange('', this.focusedRow, this.focusedCol);
+  }
+
   initializeTheBoard() {
     this.gridSize = `repeat(${BOARD_SIZE}, 1fr)`;
     this.board = [];
@@ -469,6 +555,13 @@ export class BoardComponent implements OnInit, OnDestroy {
     this.historyService.clear();
     this.canUndo = false;
     this.canRedo = false;
+    
+    // Reset keyboard navigation state
+    this.focusedRow = -1;
+    this.focusedCol = -1;
+    
+    // Set up valid letters for keyboard navigation
+    this.validLetters = new Set(getLetterSetForDifficulty(this.selectedDifficulty).split(''));
     
     for (let i = 0; i < BOARD_SIZE; i++) {
       this.board.push([]);
@@ -1037,7 +1130,7 @@ export class BoardComponent implements OnInit, OnDestroy {
     }, 100);
   }
 
-  // Keyboard shortcuts for undo/redo
+  // Keyboard shortcuts for undo/redo and cell navigation
   @HostListener('window:keydown', ['$event'])
   handleKeyboardShortcut(event: KeyboardEvent): void {
     // Check for Cmd/Ctrl key
@@ -1053,6 +1146,49 @@ export class BoardComponent implements OnInit, OnDestroy {
       else if ((event.key === 'z' && event.shiftKey) || event.key === 'y') {
         event.preventDefault();
         this.performRedo();
+      }
+    } else if (!event.shiftKey && !event.altKey) {
+      // Arrow key navigation
+      switch (event.key) {
+        case 'ArrowUp':
+          event.preventDefault();
+          this.moveFocus('up');
+          break;
+        case 'ArrowDown':
+          event.preventDefault();
+          this.moveFocus('down');
+          break;
+        case 'ArrowLeft':
+          event.preventDefault();
+          this.moveFocus('left');
+          break;
+        case 'ArrowRight':
+          event.preventDefault();
+          this.moveFocus('right');
+          break;
+        case 'Tab':
+          event.preventDefault();
+          if (event.shiftKey) {
+            // Move focus backward
+            this.moveFocus('left');
+          } else {
+            // Move focus forward
+            this.moveFocus('right');
+          }
+          break;
+        case 'Backspace':
+        case 'Delete':
+          event.preventDefault();
+          this.clearFocusedCell();
+          break;
+        default:
+          // Letter key input (A-Z)
+          if (/^[a-zA-Z]$/.test(event.key)) {
+            event.preventDefault();
+            if (this.isValidLetter(event.key)) {
+              this.fillFocusedCell(event.key);
+            }
+          }
       }
     }
   }

@@ -11,12 +11,14 @@ export class SettingsComponent implements OnInit {
 
   assistModeEnabled: boolean = true;
   soundEnabled: boolean = false;
+  colorblindModeEnabled: boolean = false;
 
   constructor(private settingsService: SettingsService) {}
 
   ngOnInit(): void {
     this.assistModeEnabled = this.settingsService.isAssistModeEnabled();
     this.soundEnabled = this.settingsService.isSoundEnabled();
+    this.colorblindModeEnabled = this.settingsService.isColorblindModeEnabled();
   }
 
   onToggleAssistMode(): void {
@@ -27,6 +29,11 @@ export class SettingsComponent implements OnInit {
   onToggleSound(): void {
     this.soundEnabled = !this.soundEnabled;
     this.settingsService.setSoundEnabled(this.soundEnabled);
+  }
+
+  onToggleColorblindMode(): void {
+    this.colorblindModeEnabled = !this.colorblindModeEnabled;
+    this.settingsService.setColorblindMode(this.colorblindModeEnabled);
   }
 
   onClose(): void {
