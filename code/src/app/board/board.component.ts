@@ -52,6 +52,10 @@ export class BoardComponent implements OnInit, OnDestroy {
   private settingsSubscription!: Subscription;
   assistModeEnabled: boolean = true;
 
+  // Row/column highlighting
+  selectedRow: number = -1;
+  selectedCol: number = -1;
+
   constructor(
     private fileService: FileServiceService, 
     private dictionaryService: DictionaryService,
@@ -132,6 +136,18 @@ export class BoardComponent implements OnInit, OnDestroy {
   }
 
   onCellClick(row: number, col: number) {
+    // Update selected row/col tracking
+    this.selectedRow = row;
+    this.selectedCol = col;
+
+    // Clear previous row/col highlights first
+    for (let i = 0; i < BOARD_SIZE; i++) {
+      for (let j = 0; j < BOARD_SIZE; j++) {
+        this.board[i][j].isInSelectedRow = false;
+        this.board[i][j].isInSelectedCol = false;
+      }
+    }
+
     for (let i = 0; i < BOARD_SIZE; i++) {
       for (let j = 0; j < BOARD_SIZE; j++) {
         if (!this.board[i][j].isLocked) {
@@ -146,6 +162,13 @@ export class BoardComponent implements OnInit, OnDestroy {
           } else {
             this.board[i][j].background = CELL_COLOR.INACTIVE_CELL;
           }
+        }
+        // Set row/column highlight for selected cell
+        if (i === row) {
+          this.board[i][j].isInSelectedRow = true;
+        }
+        if (j === col) {
+          this.board[i][j].isInSelectedCol = true;
         }
       }
     }
@@ -168,7 +191,7 @@ export class BoardComponent implements OnInit, OnDestroy {
     for (let i = 0; i < BOARD_SIZE; i++) {
       this.board.push([]);
       for (let j = 0; j < BOARD_SIZE; j++) {
-        this.board[i].push({ row: i, col: j, letter: "", isActive: false, isLocked: false, background: CELL_COLOR.INACTIVE_CELL, hasConflict: false });
+        this.board[i].push({ row: i, col: j, letter: "", isActive: false, isLocked: false, background: CELL_COLOR.INACTIVE_CELL, hasConflict: false, isInSelectedRow: false, isInSelectedCol: false });
       }
     }
     this.fillTheBoardWithAWord(this.shuffleString(INITIALIZING_WORD));

@@ -6,6 +6,8 @@ export interface Cell {
     isLocked: boolean;
     background: string;
     hasConflict?: boolean;
+    isInSelectedRow?: boolean;
+    isInSelectedCol?: boolean;
 } 
 
 export interface WordValidation {

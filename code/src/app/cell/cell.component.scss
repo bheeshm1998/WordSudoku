@@ -171,7 +171,40 @@ input {
     }
 }
 
-// CONFLICT cells - red tint for conflicts
+// Row highlight - cells in the same row as selected cell (don't override locked/conflict)
+.cell-row-highlight {
+    &:not(.cell-locked):not(.cell-conflict) {
+        background: rgba(45, 106, 79, 0.08) !important;
+        
+        &.cell-user-filled {
+            background: rgba(45, 106, 79, 0.12) !important;
+        }
+    }
+}
+
+// Column highlight - cells in the same column as selected cell
+.cell-col-highlight {
+    &:not(.cell-locked):not(.cell-conflict) {
+        background: rgba(45, 106, 79, 0.08) !important;
+        
+        &.cell-user-filled {
+            background: rgba(45, 106, 79, 0.12) !important;
+        }
+    }
+}
+
+// Combined row AND column highlight (intersection, but not selected)
+.cell-row-highlight.cell-col-highlight {
+    &:not(.cell-locked):not(.cell-conflict) {
+        background: rgba(45, 106, 79, 0.12) !important;
+        
+        &.cell-user-filled {
+            background: rgba(45, 106, 79, 0.16) !important;
+        }
+    }
+}
+
+// CONFLICT cells - red tint for conflicts (takes priority over row/col highlight)
 .cell-conflict {
     &.cell-active {
         background: rgba(251, 81, 111, 0.35) !important;
@@ -188,6 +221,14 @@ input {
 
     &.cell-locked {
         // Locked cells don't show conflict - they are pre-filled and correct
+    }
+    
+    // Conflict takes priority over row/col highlight
+    &.cell-row-highlight,
+    &.cell-col-highlight,
+    &.cell-row-highlight.cell-col-highlight {
+        background: rgba(251, 81, 111, 0.25) !important;
+        border-color: #e63946 !important;
     }
 }
 
