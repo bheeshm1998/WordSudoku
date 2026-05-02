@@ -1,8 +1,11 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { BEST_SCORE_DEFAULT_STRING, BOARD_SIZE, BOARD_SIZES, CELL_COLOR, FAILURE_INFO, GRADIENT, INITIALIZING_WORD, NUM_OF_PREFILLED_CELLS, START_TIME_TEXT, updateBoardConfig, WORDS_FILE_PATH } from '../constants';
 import { Cell, WordMeaning, WordValidation } from '../model';
 import { FileServiceService } from '../services/file-service.service';
 import { DictionaryService } from '../services/dictionary.service';
+import { ConflictDetectionService, Conflict } from '../services/conflict-detection.service';
+import { SettingsService } from '../services/settings.service';
 import { getAListOfRandomIndicesDistributedUniformly } from '../utils/utility-methods';
 
 @Component({
@@ -39,9 +42,22 @@ export class BoardComponent implements OnInit, OnDestroy {
 
   private currentGameId: string | null = null;
 
-  constructor(private fileService: FileServiceService, private dictionaryService: DictionaryService) {
-    
-  }
+  // Settings panel
+  showSettings: boolean = false;
+  
+  // Conflict detection
+  allConflicts: Conflict[] = [];
+  currentConflictIndex: number = -1;
+  showStrictModeFeedback: boolean = false;
+  private settingsSubscription!: Subscription;
+  assistModeEnabled: boolean = true;
+
+  constructor(
+    private fileService: FileServiceService, 
+    private dictionaryService: DictionaryService,
+    private conflictDetectionService: ConflictDetectionService,
+    private settingsService: SettingsService
+  ) {}
 
   ngOnInit(): void {
     this.loadWordsFile();
@@ -57,11 +73,34 @@ export class BoardComponent implements OnInit, OnDestroy {
     if(currentBestScore != undefined){
       this.bestScore = currentBestScore;
     }
+
+    // Subscribe to settings changes
+    this.settingsSubscription = this.settingsService.settings$.subscribe(settings => {
+      const previousMode = this.assistModeEnabled;
+      this.assistModeEnabled = settings.assistModeEnabled;
+      
+      // If mode changed, clear conflicts and re-evaluate
+      if (previousMode !== this.assistModeEnabled && this.board.length > 0) {
+        this.clearAllConflictHighlights();
+        if (this.assistModeEnabled) {
+          // Assist mode: show all conflicts immediately
+          this.updateConflictHighlights();
+        } else {
+          // Strict mode: clear feedback unless board is complete
+          if (this.checkIfTheBoardIsFullyFilled(this.board)) {
+            this.startStrictModeFeedback();
+          }
+        }
+      }
+    });
   }
 
   ngOnDestroy(): void {
     this.persistGameState();
     this.clearTimer();
+    if (this.settingsSubscription) {
+      this.settingsSubscription.unsubscribe();
+    }
   }
 
   onBoardSizeChange(newSize: number) {
@@ -88,6 +127,7 @@ export class BoardComponent implements OnInit, OnDestroy {
       this.ALL_WORDS = new Set(
         res.split(/\r?\n/).map(w => w.trim().toLowerCase()).filter(w => w.length > 0)
       );
+      this.conflictDetectionService.setDictionary(this.ALL_WORDS);
     });
   }
 
@@ -123,10 +163,12 @@ export class BoardComponent implements OnInit, OnDestroy {
     localStorage.setItem("lastGameId", this.currentGameId);
     this.disableUserAction = false;
     this.solveStatus = "";
+    this.clearStrictModeState();
+    this.assistModeEnabled = this.settingsService.isAssistModeEnabled();
     for (let i = 0; i < BOARD_SIZE; i++) {
       this.board.push([]);
       for (let j = 0; j < BOARD_SIZE; j++) {
-        this.board[i].push({ row: i, col: j, letter: "", isActive: false, isLocked: false, background: CELL_COLOR.INACTIVE_CELL });
+        this.board[i].push({ row: i, col: j, letter: "", isActive: false, isLocked: false, background: CELL_COLOR.INACTIVE_CELL, hasConflict: false });
       }
     }
     this.fillTheBoardWithAWord(this.shuffleString(INITIALIZING_WORD));
@@ -139,15 +181,100 @@ export class BoardComponent implements OnInit, OnDestroy {
   onCellValueChange(input: string, row: number, col: number) {
     this.solveStatus = "";
     this.failureReason = "";
+    this.failureDetail = "";
     this.setDefaultColors();
+    this.clearAllConflictHighlights();
     this.board[row][col].letter = input;
     this.persistGameState();
+
+    if (this.assistModeEnabled) {
+      // Assist Mode: show real-time conflict feedback
+      this.updateConflictHighlights();
+    } else if (this.showStrictModeFeedback) {
+      // Strict Mode: check if current conflict was fixed, advance to next
+      const result = this.conflictDetectionService.detectAllConflicts(this.board);
+      this.allConflicts = result.conflicts;
+      
+      if (this.allConflicts.length > 0) {
+        // Still have conflicts, show the first one
+        this.currentConflictIndex = 0;
+        this.highlightCurrentConflict();
+      } else {
+        // No more conflicts - puzzle solved!
+        this.showStrictModeFeedback = false;
+        this.currentConflictIndex = -1;
+        this.solveStatus = "SUCCESS";
+        this.onBoardSuccessfullCompletion();
+      }
+      return;
+    }
+
     if (this.checkIfTheBoardIsFullyFilled(this.board)) {
       if (this.checkIfTheBoardIsSolved(this.board)) {
         this.solveStatus = "SUCCESS";
         this.onBoardSuccessfullCompletion();
       } else {
         this.solveStatus = "TRY AGAIN";
+        if (!this.assistModeEnabled) {
+          // Strict Mode: start showing conflicts one at a time
+          this.startStrictModeFeedback();
+        }
+      }
+    } else {
+      // Board not fully filled - clear strict mode feedback
+      this.clearStrictModeState();
+    }
+  }
+
+  private startStrictModeFeedback(): void {
+    const result = this.conflictDetectionService.detectAllConflicts(this.board);
+    this.allConflicts = result.conflicts;
+    
+    if (this.allConflicts.length > 0) {
+      this.currentConflictIndex = 0;
+      this.showStrictModeFeedback = true;
+      this.highlightCurrentConflict();
+    }
+  }
+
+  private highlightCurrentConflict(): void {
+    if (this.currentConflictIndex >= 0 && this.currentConflictIndex < this.allConflicts.length) {
+      const conflict = this.allConflicts[this.currentConflictIndex];
+      this.clearAllConflictHighlights();
+      
+      for (const cell of conflict.cells) {
+        this.board[cell.row][cell.col].hasConflict = true;
+      }
+      
+      this.failureDetail = conflict.message || '';
+      this.failureReason = conflict.type === 'word' ? FAILURE_INFO.WORD_EXISTS : FAILURE_INFO.DUPLICATE;
+      
+      if (conflict.type === 'word' && conflict.word) {
+        this.foundWord = conflict.word;
+      }
+    }
+  }
+
+  private clearStrictModeState(): void {
+    this.allConflicts = [];
+    this.currentConflictIndex = -1;
+    this.showStrictModeFeedback = false;
+  }
+
+  private clearAllConflictHighlights(): void {
+    for (let i = 0; i < BOARD_SIZE; i++) {
+      for (let j = 0; j < BOARD_SIZE; j++) {
+        this.board[i][j].hasConflict = false;
+      }
+    }
+  }
+
+  private updateConflictHighlights(): void {
+    const conflictCells = this.conflictDetectionService.getConflictCells(this.board);
+    
+    for (let i = 0; i < BOARD_SIZE; i++) {
+      for (let j = 0; j < BOARD_SIZE; j++) {
+        this.board[i][j].hasConflict = conflictCells.has(`${i},${j}`);
       }
     }
   }
@@ -440,6 +567,15 @@ export class BoardComponent implements OnInit, OnDestroy {
 
   onCloseModal() {
     this.wordMeaning = null;
+  }
+
+  // Settings panel methods
+  openSettings(): void {
+    this.showSettings = true;
+  }
+
+  onCloseSettings(): void {
+    this.showSettings = false;
   }
 
   shuffleString(inputString: string): string {

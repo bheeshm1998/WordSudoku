@@ -8,13 +8,15 @@ import { CellComponent } from './cell/cell.component';
 import { HttpClientModule } from '@angular/common/http';
 import { WordMeaningComponent } from './word-meaning/word-meaning.component';
 import { FormsModule } from '@angular/forms';
+import { SettingsComponent } from './settings/settings.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     BoardComponent,
     CellComponent,
-    WordMeaningComponent
+    WordMeaningComponent,
+    SettingsComponent
   ],
   imports: [
     BrowserModule,

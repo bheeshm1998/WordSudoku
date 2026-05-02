@@ -1,0 +1,55 @@
+<div class="settings-backdrop" (click)="onBackdropClick($event)">
+    <div class="settings-panel">
+        <div class="settings-header">
+            <h2>Settings</h2>
+            <button class="close-btn" (click)="onClose()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        
+        <div class="settings-content">
+            <div class="setting-item">
+                <div class="setting-info">
+                    <span class="setting-label">Assist Mode</span>
+                    <span class="setting-description">
+                        <ng-container *ngIf="assistModeEnabled">
+                            Real-time conflict highlighting
+                        </ng-container>
+                        <ng-container *ngIf="!assistModeEnabled">
+                            Strict mode - conflicts shown one at a time on completion
+                        </ng-container>
+                    </span>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" [checked]="assistModeEnabled" (change)="onToggleAssistMode()">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="setting-divider"></div>
+
+            <div class="setting-info-box">
+                <h4>Mode Details</h4>
+                <div class="mode-detail">
+                    <strong>Assist Mode (ON):</strong>
+                    <ul>
+                        <li>Conflicting cells highlight red immediately</li>
+                        <li>All cells involved in conflict are shown</li>
+                        <li>Best for learning and casual play</li>
+                    </ul>
+                </div>
+                <div class="mode-detail">
+                    <strong>Strict Mode (OFF):</strong>
+                    <ul>
+                        <li>No feedback while filling the board</li>
+                        <li>Conflicts shown one at a time after completion</li>
+                        <li>Best for experienced players</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

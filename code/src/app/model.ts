@@ -5,6 +5,7 @@ export interface Cell {
     isActive: boolean;
     isLocked: boolean;
     background: string;
+    hasConflict?: boolean;
 } 
 
 export interface WordValidation {

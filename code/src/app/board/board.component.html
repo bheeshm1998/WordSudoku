@@ -5,6 +5,12 @@
         <p class="game-rules">
             Fill every cell so no row or column repeats a letter or spells a word in any direction.
         </p>
+        <button class="settings-btn" (click)="openSettings()" title="Settings">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+        </button>
     </div>
 
     <div class="size-selector">
@@ -47,7 +53,7 @@
     </div>
 
     <div class="feedback-area">
-        <ng-container *ngIf="failureReason !== ''">
+        <ng-container *ngIf="failureReason !== '' && failureDetail">
             <span class="failure-detail">{{ failureDetail }}</span>
             <button class="meaning-btn" *ngIf="failureReason === 'wordExists'" (click)="onClickSeeMeaning()">
                 See meaning
@@ -56,9 +62,16 @@
         <ng-container *ngIf="solveStatus !== '' && failureReason === ''">
             <p class="solve-status" [class.solve-status--success]="solveStatus === 'SUCCESS'">{{ solveStatus }}</p>
         </ng-container>
+        <ng-container *ngIf="!assistModeEnabled && showStrictModeFeedback && allConflicts.length > 0">
+            <span class="strict-mode-indicator">
+                Conflict {{ currentConflictIndex + 1 }} of {{ allConflicts.length }}
+            </span>
+        </ng-container>
     </div>
 
     <button class="restart-btn" (click)="onClickRestart()">New Game</button>
 
     <app-word-meaning [wordMeaning]="wordMeaning" (closeModal)="onCloseModal()"></app-word-meaning>
+    
+    <app-settings *ngIf="showSettings" (closeModal)="onCloseSettings()"></app-settings>
 </div>

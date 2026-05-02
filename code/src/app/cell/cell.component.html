@@ -14,7 +14,8 @@
             'cell-active': cellInfo.isActive,
             'cell-not-active': !cellInfo.isActive,
             'cell-locked': cellInfo.isLocked,
-            'cell-user-filled': cellInfo.letter && !cellInfo.isLocked
+            'cell-user-filled': cellInfo.letter && !cellInfo.isLocked,
+            'cell-conflict': cellInfo.hasConflict
         }"
         [ngStyle]="{'background': cellInfo.background}"
     >

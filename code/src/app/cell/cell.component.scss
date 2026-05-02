@@ -170,3 +170,32 @@ input {
         pointer-events: none;
     }
 }
+
+// CONFLICT cells - red tint for conflicts
+.cell-conflict {
+    &.cell-active {
+        background: rgba(251, 81, 111, 0.35) !important;
+        border-color: #e63946 !important;
+        box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.3), 0 2px 8px rgba(230, 57, 70, 0.2);
+        animation: pulse-conflict 1.5s ease-in-out infinite;
+    }
+
+    &.cell-not-active {
+        background: rgba(251, 81, 111, 0.25) !important;
+        border-color: #e63946 !important;
+        animation: pulse-conflict 1.5s ease-in-out infinite;
+    }
+
+    &.cell-locked {
+        // Locked cells don't show conflict - they are pre-filled and correct
+    }
+}
+
+@keyframes pulse-conflict {
+    0%, 100% {
+        box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.3), 0 2px 8px rgba(230, 57, 70, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 0 5px rgba(230, 57, 70, 0.15), 0 2px 12px rgba(230, 57, 70, 0.25);
+    }
+}
