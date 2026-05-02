@@ -23,6 +23,7 @@ export interface ConfettiParticle {
 import { SettingsService } from '../services/settings.service';
 import { HistoryService } from '../services/history.service';
 import { StatsService } from '../services/stats.service';
+import { ShareService } from '../services/share.service';
 import { getAListOfRandomIndicesDistributedUniformly } from '../utils/utility-methods';
 
 @Component({
@@ -95,13 +96,18 @@ export class BoardComponent implements OnInit, OnDestroy {
   soundEnabled: boolean = false;
   private soundSubscription?: Subscription;
 
+  // Share functionality
+  showCopiedToast: boolean = false;
+  private toastTimeoutId: any;
+
   constructor(
     private fileService: FileServiceService, 
     private dictionaryService: DictionaryService,
     private conflictDetectionService: ConflictDetectionService,
     private settingsService: SettingsService,
     private historyService: HistoryService,
-    private statsService: StatsService
+    private statsService: StatsService,
+    private shareService: ShareService
   ) {}
 
   ngOnInit(): void {
@@ -1167,6 +1173,43 @@ export class BoardComponent implements OnInit, OnDestroy {
       }, 3000);
     } else {
       this.bestScore = currentBest;
+    }
+  }
+
+  // Share functionality
+  onClickShare(): void {
+    const shareData = {
+      boardSize: this.selectedBoardSize,
+      difficulty: this.selectedDifficulty,
+      timeTaken: this.timeTaken,
+      board: this.board
+    };
+
+    const shareText = this.shareService.generateShareTextWithGrid(shareData);
+
+    // Try native share first (mobile), fall back to clipboard (desktop)
+    if (this.shareService.isShareSupported()) {
+      this.shareService.shareViaNative({
+        title: 'Word Sudoku',
+        text: shareText
+      });
+    } else {
+      // Desktop: copy to clipboard and show toast
+      this.shareService.copyToClipboard(shareText).then(success => {
+        if (success) {
+          this.showCopiedToast = true;
+          
+          // Clear any existing timeout
+          if (this.toastTimeoutId) {
+            clearTimeout(this.toastTimeoutId);
+          }
+          
+          // Auto-hide toast after 2 seconds
+          this.toastTimeoutId = setTimeout(() => {
+            this.showCopiedToast = false;
+          }, 2000);
+        }
+      });
     }
   }
 
