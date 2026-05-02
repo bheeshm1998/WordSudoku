@@ -31,6 +31,26 @@
 
             <div class="setting-divider"></div>
 
+            <div class="setting-item">
+                <div class="setting-info">
+                    <span class="setting-label">Sound Effects</span>
+                    <span class="setting-description">
+                        <ng-container *ngIf="soundEnabled">
+                            Play sounds on puzzle completion
+                        </ng-container>
+                        <ng-container *ngIf="!soundEnabled">
+                            Sound effects disabled
+                        </ng-container>
+                    </span>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" [checked]="soundEnabled" (change)="onToggleSound()">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="setting-divider"></div>
+
             <div class="setting-info-box">
                 <h4>Mode Details</h4>
                 <div class="mode-detail">

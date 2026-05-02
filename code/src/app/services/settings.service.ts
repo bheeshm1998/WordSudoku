@@ -3,10 +3,12 @@ import { BehaviorSubject } from 'rxjs';
 
 export interface Settings {
   assistModeEnabled: boolean;
+  soundEnabled: boolean;
 }
 
 const DEFAULT_SETTINGS: Settings = {
-  assistModeEnabled: true
+  assistModeEnabled: true,
+  soundEnabled: false
 };
 
 const STORAGE_KEY = 'wordSudoku_settings';
@@ -62,6 +64,32 @@ export class SettingsService {
       const updated: Settings = {
         ...current,
         assistModeEnabled: enabled
+      };
+      this.settingsSubject.next(updated);
+      this.saveSettings(updated);
+    }
+  }
+
+  isSoundEnabled(): boolean {
+    return this.settingsSubject.getValue().soundEnabled;
+  }
+
+  toggleSound(): void {
+    const current = this.settingsSubject.getValue();
+    const updated: Settings = {
+      ...current,
+      soundEnabled: !current.soundEnabled
+    };
+    this.settingsSubject.next(updated);
+    this.saveSettings(updated);
+  }
+
+  setSoundEnabled(enabled: boolean): void {
+    const current = this.settingsSubject.getValue();
+    if (current.soundEnabled !== enabled) {
+      const updated: Settings = {
+        ...current,
+        soundEnabled: enabled
       };
       this.settingsSubject.next(updated);
       this.saveSettings(updated);

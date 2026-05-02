@@ -498,6 +498,64 @@
     pointer-events: none;
 }
 
+// Completion animation styles
+.cell-pulse {
+    animation: cellPulse 0.3s ease-out;
+}
+
+@keyframes cellPulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.08);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.completion-animation {
+    position: relative;
+}
+
+.confetti-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: visible;
+    z-index: 100;
+}
+
+.confetti-particle {
+    position: absolute;
+    border-radius: 2px;
+    pointer-events: none;
+}
+
+// Timer highlight animation
+.timer-value.highlight {
+    animation: timerHighlight 0.5s ease-out;
+}
+
+@keyframes timerHighlight {
+    0% {
+        transform: scale(1);
+        color: #374151;
+    }
+    50% {
+        transform: scale(1.15);
+        color: #2d6a4f;
+    }
+    100% {
+        transform: scale(1);
+        color: #2d6a4f;
+    }
+}
+
 // Tablet/iPad: 768px - 1024px
 @media (min-width: 768px) and (max-width: 1024px) {
     .game-board {

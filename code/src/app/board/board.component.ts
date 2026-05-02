@@ -6,6 +6,20 @@ import { Difficulty } from '../constants';
 import { FileServiceService } from '../services/file-service.service';
 import { DictionaryService } from '../services/dictionary.service';
 import { ConflictDetectionService, Conflict } from '../services/conflict-detection.service';
+
+// Confetti particle interface for completion animation
+export interface ConfettiParticle {
+  id: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  color: string;
+  size: number;
+  rotation: number;
+  rotationSpeed: number;
+  life: number;
+}
 import { SettingsService } from '../services/settings.service';
 import { HistoryService } from '../services/history.service';
 import { StatsService } from '../services/stats.service';
@@ -71,6 +85,16 @@ export class BoardComponent implements OnInit, OnDestroy {
   canRedo: boolean = false;
   private historySubscription?: Subscription;
 
+  // Completion animation state
+  showCompletionAnimation: boolean = false;
+  prefersReducedMotion: boolean = false;
+  confettiParticles: ConfettiParticle[] = [];
+  private completionAnimationPlayed: boolean = false;
+  
+  // Sound
+  soundEnabled: boolean = false;
+  private soundSubscription?: Subscription;
+
   constructor(
     private fileService: FileServiceService, 
     private dictionaryService: DictionaryService,
@@ -99,6 +123,7 @@ export class BoardComponent implements OnInit, OnDestroy {
     this.settingsSubscription = this.settingsService.settings$.subscribe(settings => {
       const previousMode = this.assistModeEnabled;
       this.assistModeEnabled = settings.assistModeEnabled;
+      this.soundEnabled = settings.soundEnabled;
       
       // If mode changed, clear conflicts and re-evaluate
       if (previousMode !== this.assistModeEnabled && this.board.length > 0) {
@@ -114,6 +139,18 @@ export class BoardComponent implements OnInit, OnDestroy {
         }
       }
     });
+
+    // Subscribe to sound setting
+    this.soundSubscription = this.settingsService.settings$.subscribe(settings => {
+      this.soundEnabled = settings.soundEnabled;
+    });
+
+    // Check for prefers-reduced-motion
+    this.checkPrefersReducedMotion();
+    if (typeof window !== 'undefined') {
+      const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+      mediaQuery.addEventListener('change', (e) => this.prefersReducedMotion = e.matches);
+    }
 
     // Subscribe to history state changes
     this.historySubscription = this.historyService.canUndo$.subscribe(canUndo => {
@@ -133,6 +170,181 @@ export class BoardComponent implements OnInit, OnDestroy {
     if (this.historySubscription) {
       this.historySubscription.unsubscribe();
     }
+    if (this.soundSubscription) {
+      this.soundSubscription.unsubscribe();
+    }
+  }
+
+  private checkPrefersReducedMotion(): void {
+    if (typeof window !== 'undefined') {
+      this.prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    }
+  }
+
+  private playSuccessSound(): void {
+    if (!this.soundEnabled) return;
+    
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.type = 'sine';
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      
+      // Play a pleasant success chord (C-E-G arpeggio)
+      const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
+      const duration = 0.15;
+      
+      notes.forEach((freq, index) => {
+        oscillator.frequency.setValueAtTime(freq, audioContext.currentTime + index * duration);
+      });
+      
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + notes.length * duration + 0.1);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + notes.length * duration + 0.2);
+    } catch (e) {
+      console.warn('Could not play success sound:', e);
+    }
+  }
+
+  private triggerCompletionAnimation(): void {
+    // Prevent animation from playing multiple times
+    if (this.completionAnimationPlayed) {
+      return;
+    }
+    this.completionAnimationPlayed = true;
+    
+    // If user prefers reduced motion, just show success state immediately
+    if (this.prefersReducedMotion) {
+      this.showCompletionAnimation = true;
+      this.setCellsToSuccessColor();
+      return;
+    }
+    
+    // Start the completion animation sequence
+    this.showCompletionAnimation = true;
+    
+    // Phase 1: Wave pulse animation on cells (row by row from top-left)
+    this.animateCellPulseWave();
+    
+    // Phase 2: After pulse wave, shift to brighter green
+    setTimeout(() => {
+      this.setCellsToSuccessColor();
+    }, BOARD_SIZE * 50 + 300); // Wait for wave to complete plus a bit
+    
+    // Phase 3: Confetti burst from center
+    setTimeout(() => {
+      this.triggerConfettiBurst();
+    }, BOARD_SIZE * 50 + 300);
+    
+    // Phase 4: Timer highlight animation
+    setTimeout(() => {
+      // Timer highlight is handled via CSS class in template
+    }, BOARD_SIZE * 50 + 400);
+    
+    // Phase 5: Play success sound
+    setTimeout(() => {
+      this.playSuccessSound();
+    }, 200);
+  }
+  
+  private animateCellPulseWave(): void {
+    const cellElements = document.querySelectorAll('.board .cell');
+    cellElements.forEach((cell, index) => {
+      const row = Math.floor(index / BOARD_SIZE);
+      const col = index % BOARD_SIZE;
+      const delay = (row + col) * 30; // Diagonal wave timing
+      
+      setTimeout(() => {
+        cell.classList.add('cell-pulse');
+        setTimeout(() => {
+          cell.classList.remove('cell-pulse');
+        }, 300);
+      }, delay);
+    });
+  }
+  
+  private setCellsToSuccessColor(): void {
+    for (let i = 0; i < BOARD_SIZE; i++) {
+      for (let j = 0; j < BOARD_SIZE; j++) {
+        if (!this.board[i][j].isLocked) {
+          this.board[i][j].background = '#52b488'; // Brighter green for success
+        }
+      }
+    }
+  }
+  
+  private triggerConfettiBurst(): void {
+    const confettiColors = ['#2d6a4f', '#40916c', '#52b488', '#74c69d', '#95d5b2', '#d97706', '#f59e0b'];
+    const boardElement = document.querySelector('.board');
+    if (!boardElement) return;
+    
+    const boardRect = boardElement.getBoundingClientRect();
+    const centerX = boardRect.width / 2;
+    const centerY = boardRect.height / 2;
+    
+    const particleCount = 30;
+    this.confettiParticles = [];
+    
+    for (let i = 0; i < particleCount; i++) {
+      const angle = (Math.PI * 2 * i) / particleCount + Math.random() * 0.5;
+      const velocity = 3 + Math.random() * 4;
+      
+      this.confettiParticles.push({
+        id: i,
+        x: centerX,
+        y: centerY,
+        vx: Math.cos(angle) * velocity,
+        vy: Math.sin(angle) * velocity - 2, // Slight upward bias
+        color: confettiColors[Math.floor(Math.random() * confettiColors.length)],
+        size: 4 + Math.random() * 4,
+        rotation: Math.random() * 360,
+        rotationSpeed: (Math.random() - 0.5) * 10,
+        life: 1
+      });
+    }
+    
+    // Animate confetti using requestAnimationFrame
+    this.animateConfetti();
+  }
+  
+  private animateConfetti(): void {
+    const gravity = 0.15;
+    const friction = 0.98;
+    const duration = 1500; // 1.5 seconds total
+    const startTime = Date.now();
+    
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      
+      if (elapsed > duration || this.confettiParticles.length === 0) {
+        this.confettiParticles = [];
+        return;
+      }
+      
+      // Update particle positions
+      this.confettiParticles.forEach(particle => {
+        particle.vy += gravity;
+        particle.vx *= friction;
+        particle.vy *= friction;
+        particle.x += particle.vx;
+        particle.y += particle.vy;
+        particle.rotation += particle.rotationSpeed;
+        particle.life = 1 - (elapsed / duration);
+      });
+      
+      // Remove dead particles
+      this.confettiParticles = this.confettiParticles.filter(p => p.life > 0);
+      
+      requestAnimationFrame(animate);
+    };
+    
+    requestAnimationFrame(animate);
   }
 
   private loadPersistedSettings(): void {
@@ -243,6 +455,9 @@ export class BoardComponent implements OnInit, OnDestroy {
     this.solveStatus = "";
     this.clearStrictModeState();
     this.assistModeEnabled = this.settingsService.isAssistModeEnabled();
+    this.showCompletionAnimation = false;
+    this.completionAnimationPlayed = false;
+    this.confettiParticles = [];
     
     // Clear history when starting a new game
     this.historyService.clear();
@@ -387,6 +602,7 @@ export class BoardComponent implements OnInit, OnDestroy {
     clearInterval(this.intervalId);
     this.updateTheScoresData();
     this.recordSolveStats();
+    this.triggerCompletionAnimation();
   }
 
   private recordSolveStats(): void {
