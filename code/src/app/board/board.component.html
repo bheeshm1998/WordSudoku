@@ -25,6 +25,18 @@
         </div>
     </div>
 
+    <div class="difficulty-selector">
+        <span class="difficulty-label">Difficulty:</span>
+        <div class="difficulty-options">
+            <button *ngFor="let diff of availableDifficulties"
+                    class="difficulty-btn"
+                    [class.active]="diff === selectedDifficulty"
+                    (click)="onDifficultyChange(diff)">
+                {{ diff }}
+            </button>
+        </div>
+    </div>
+
     <div class="timer-row">
         <div class="timer-block">
             <span class="timer-label">BEST</span>

@@ -1,7 +1,8 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { BEST_SCORE_DEFAULT_STRING, BOARD_SIZE, BOARD_SIZES, CELL_COLOR, FAILURE_INFO, GRADIENT, INITIALIZING_WORD, NUM_OF_PREFILLED_CELLS, START_TIME_TEXT, updateBoardConfig, WORDS_FILE_PATH } from '../constants';
+import { BEST_SCORE_DEFAULT_STRING, BOARD_SIZE, BOARD_SIZES, CELL_COLOR, DIFFICULTY, DIFFICULTY_LEVELS, DIFFICULTY_PREFILLED_CONFIG, FAILURE_INFO, getLetterSetForDifficulty, GRADIENT, INITIALIZING_WORD, NUM_OF_PREFILLED_CELLS, START_TIME_TEXT, updateBoardConfig, WORDS_FILE_PATH } from '../constants';
 import { Cell, WordMeaning, WordValidation } from '../model';
+import { Difficulty } from '../constants';
 import { FileServiceService } from '../services/file-service.service';
 import { DictionaryService } from '../services/dictionary.service';
 import { ConflictDetectionService, Conflict } from '../services/conflict-detection.service';
@@ -40,6 +41,9 @@ export class BoardComponent implements OnInit, OnDestroy {
 
   availableBoardSizes = BOARD_SIZES;
   selectedBoardSize: number = BOARD_SIZE;
+  
+  availableDifficulties = DIFFICULTY_LEVELS;
+  selectedDifficulty: Difficulty = DIFFICULTY;
 
   private currentGameId: string | null = null;
 
@@ -72,10 +76,12 @@ export class BoardComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadWordsFile();
+    this.loadPersistedSettings();
     const persistedState = this.loadPersistedGameState();
     if (persistedState && !this.shouldStartNewGame(persistedState)) {
       this.selectedBoardSize = persistedState.boardSize;
-      updateBoardConfig(persistedState.boardSize);
+      this.selectedDifficulty = persistedState.difficulty || Difficulty.Medium;
+      updateBoardConfig(persistedState.boardSize, this.selectedDifficulty);
       this.restoreGameState(persistedState);
     } else {
       this.initializeTheBoard();
@@ -125,6 +131,31 @@ export class BoardComponent implements OnInit, OnDestroy {
     }
   }
 
+  private loadPersistedSettings(): void {
+    const savedDifficulty = localStorage.getItem('wordSudoku_difficulty');
+    if (savedDifficulty && Object.values(Difficulty).includes(savedDifficulty as Difficulty)) {
+      this.selectedDifficulty = savedDifficulty as Difficulty;
+    }
+  }
+
+  private persistSettings(): void {
+    localStorage.setItem('wordSudoku_difficulty', this.selectedDifficulty);
+  }
+
+  onDifficultyChange(difficulty: Difficulty) {
+    if (difficulty === this.selectedDifficulty) return;
+    
+    if (this.currentGameId) {
+      localStorage.removeItem(`gameState_${this.currentGameId}`);
+    }
+    
+    this.selectedDifficulty = difficulty;
+    this.persistSettings();
+    updateBoardConfig(this.selectedBoardSize, this.selectedDifficulty);
+    this.clearTimer();
+    this.initializeTheBoard();
+  }
+
   onBoardSizeChange(newSize: number) {
     if (newSize === this.selectedBoardSize) return;
     
@@ -133,7 +164,7 @@ export class BoardComponent implements OnInit, OnDestroy {
     }
     
     this.selectedBoardSize = newSize;
-    updateBoardConfig(newSize);
+    updateBoardConfig(newSize, this.selectedDifficulty);
     this.clearTimer();
     this.initializeTheBoard();
   }
@@ -218,7 +249,10 @@ export class BoardComponent implements OnInit, OnDestroy {
         this.board[i].push({ row: i, col: j, letter: "", isActive: false, isLocked: false, background: CELL_COLOR.INACTIVE_CELL, hasConflict: false, isInSelectedRow: false, isInSelectedCol: false });
       }
     }
-    this.fillTheBoardWithAWord(this.shuffleString(INITIALIZING_WORD));
+    
+    // Get letter set based on difficulty
+    const letterSet = getLetterSetForDifficulty(this.selectedDifficulty);
+    this.fillTheBoardWithAWord(this.shuffleString(letterSet));
     this.startTime = Date.now();
     this.timeTaken = START_TIME_TEXT;
     this.startTimerInterval();
@@ -709,6 +743,7 @@ export class BoardComponent implements OnInit, OnDestroy {
     const gameState = {
       gameId: this.currentGameId,
       boardSize: this.selectedBoardSize,
+      difficulty: this.selectedDifficulty,
       board: this.board,
       timeTaken: this.timeTaken,
       startTime: this.startTime,
@@ -735,6 +770,7 @@ export class BoardComponent implements OnInit, OnDestroy {
   private shouldStartNewGame(persistedState: any): boolean {
     if (!persistedState) return true;
     if (persistedState.boardSize !== this.selectedBoardSize) return true;
+    if (persistedState.difficulty !== this.selectedDifficulty) return true;
     if (persistedState.solveStatus === 'SUCCESS') return true;
     return false;
   }

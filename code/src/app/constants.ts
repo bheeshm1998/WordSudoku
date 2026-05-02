@@ -1,19 +1,78 @@
+export enum Difficulty {
+    Easy = 'easy',
+    Medium = 'medium',
+    Hard = 'hard'
+}
+
+export const DIFFICULTY_LEVELS = [Difficulty.Easy, Difficulty.Medium, Difficulty.Hard];
+
 export const BOARD_SIZES = [5, 7, 9];
-export const BOARD_SIZE_CONFIGS: Record<number, { numPrefilled: number; initialWord: string }> = {
-    5: { numPrefilled: 10, initialWord: "AETIONSUEI" },
-    7: { numPrefilled: 19, initialWord: "AEIOURSTLIN" },
-    9: { numPrefilled: 30, initialWord: "AEIOURSTLNCGD" },
+
+// Pre-filled cell counts based on board size and difficulty
+export const DIFFICULTY_PREFILLED_CONFIG: Record<Difficulty, Record<number, number>> = {
+    [Difficulty.Easy]: {
+        5: 12,
+        7: 22,
+        9: 35
+    },
+    [Difficulty.Medium]: {
+        5: 9,
+        7: 16,
+        9: 26
+    },
+    [Difficulty.Hard]: {
+        5: 6,
+        7: 11,
+        9: 18
+    }
+};
+
+// Letter sets for puzzle generation based on difficulty
+// Easy: avoid letters that form many common words (A-E-I-N-S-T)
+// Medium: balanced random selection
+// Hard: letters with more "near-word" risk
+export const DIFFICULTY_LETTER_SETS: Record<Difficulty, string[]> = {
+    [Difficulty.Easy]: [
+        "BDFGHLMO",    // Hard consonants, fewer words
+        "CDFKMPQR",    // More uncommon combinations
+        "BGHJKNPQ",    // Avoiding vowels early
+        "DFGKLMPW",    // Complex starting combos
+    ],
+    [Difficulty.Medium]: [
+        "AEIOURSTLN",  // Original balanced set
+        "AEIOURSTNI",  // Slightly modified
+        "AEIOURSTLC",  // Different ending
+        "AEIOURSTLM",  // Another variant
+    ],
+    [Difficulty.Hard]: [
+        "AEIOURSFGP",  // Mix vowels with tricky consonants
+        "AEIOURTZBC",  // Z and other challenging letters
+        "AEIOURQXJK",  // Q and X for complexity
+        "AEIOURVYHW",  // Y and W variations
+    ]
+};
+
+export const BOARD_SIZE_CONFIGS: Record<number, { initialWord: string }> = {
+    5: { initialWord: "AETIONSUEI" },
+    7: { initialWord: "AEIOURSTLIN" },
+    9: { initialWord: "AEIOURSTLNCGD" },
 };
 
 export let BOARD_SIZE = 5;
-export let NUM_OF_PREFILLED_CELLS = 10;
+export let DIFFICULTY = Difficulty.Medium;
+export let NUM_OF_PREFILLED_CELLS = 9;
 export let INITIALIZING_WORD = "AETIONSUEI";
 
-export function updateBoardConfig(size: number) {
+export function updateBoardConfig(size: number, difficulty: Difficulty = Difficulty.Medium) {
     BOARD_SIZE = size;
-    const config = BOARD_SIZE_CONFIGS[size];
-    NUM_OF_PREFILLED_CELLS = config.numPrefilled;
-    INITIALIZING_WORD = config.initialWord;
+    DIFFICULTY = difficulty;
+    NUM_OF_PREFILLED_CELLS = DIFFICULTY_PREFILLED_CONFIG[difficulty][size];
+    INITIALIZING_WORD = getLetterSetForDifficulty(difficulty);
+}
+
+export function getLetterSetForDifficulty(difficulty: Difficulty): string {
+    const sets = DIFFICULTY_LETTER_SETS[difficulty];
+    return sets[Math.floor(Math.random() * sets.length)];
 }
 
 export const GRADIENT: Record<string, string> = {
