@@ -116,7 +116,7 @@ export class ConflictDetectionService {
 
     for (let col = 0; col < BOARD_SIZE; col++) {
       const letter = board[row][col].letter.toUpperCase();
-      if (letter && !board[row][col].isLocked) {
+      if (letter) {
         if (!letterPositions.has(letter)) {
           letterPositions.set(letter, []);
         }
@@ -147,7 +147,7 @@ export class ConflictDetectionService {
 
     for (let row = 0; row < BOARD_SIZE; row++) {
       const letter = board[row][col].letter.toUpperCase();
-      if (letter && !board[row][col].isLocked) {
+      if (letter) {
         if (!letterPositions.has(letter)) {
           letterPositions.set(letter, []);
         }
