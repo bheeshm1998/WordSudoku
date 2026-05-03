@@ -79,6 +79,35 @@ export class ConflictDetectionService {
   }
 
   /**
+   * Get only the cells involved in duplicate-letter conflicts (no word checks).
+   * Used for live in-progress feedback so word formations don't trigger alerts
+   * until the board is fully filled.
+   */
+  getDuplicateConflictCells(board: Cell[][]): Set<string> {
+    const conflictCells = new Set<string>();
+
+    for (let row = 0; row < BOARD_SIZE; row++) {
+      const rowConflicts = this.checkRowForDuplicates(board, row);
+      for (const conflict of rowConflicts) {
+        for (const cell of conflict.cells) {
+          conflictCells.add(`${cell.row},${cell.col}`);
+        }
+      }
+    }
+
+    for (let col = 0; col < BOARD_SIZE; col++) {
+      const colConflicts = this.checkColumnForDuplicates(board, col);
+      for (const conflict of colConflicts) {
+        for (const cell of conflict.cells) {
+          conflictCells.add(`${cell.row},${cell.col}`);
+        }
+      }
+    }
+
+    return conflictCells;
+  }
+
+  /**
    * Check a specific row for duplicate letters
    */
   private checkRowForDuplicates(board: Cell[][], row: number): Conflict[] {

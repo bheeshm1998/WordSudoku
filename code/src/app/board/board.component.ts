@@ -687,8 +687,14 @@ export class BoardComponent implements OnInit, OnDestroy {
   }
 
   private updateConflictHighlights(): void {
-    const conflictCells = this.conflictDetectionService.getConflictCells(this.board);
-    
+    // Live feedback: only flag duplicate-letter conflicts. Word-formation
+    // conflicts are deferred until the board is fully filled (handled by
+    // checkIfTheBoardIsSolved below).
+    const boardFull = this.checkIfTheBoardIsFullyFilled(this.board);
+    const conflictCells = boardFull
+      ? this.conflictDetectionService.getConflictCells(this.board)
+      : this.conflictDetectionService.getDuplicateConflictCells(this.board);
+
     for (let i = 0; i < BOARD_SIZE; i++) {
       for (let j = 0; j < BOARD_SIZE; j++) {
         this.board[i][j].hasConflict = conflictCells.has(`${i},${j}`);
@@ -1182,12 +1188,11 @@ export class BoardComponent implements OnInit, OnDestroy {
           this.clearFocusedCell();
           break;
         default:
-          // Letter key input (A-Z)
+          // Letter key input (A-Z) — accept any letter, not just those in the
+          // difficulty's letter set. The letter set is for puzzle generation only.
           if (/^[a-zA-Z]$/.test(event.key)) {
             event.preventDefault();
-            if (this.isValidLetter(event.key)) {
-              this.fillFocusedCell(event.key);
-            }
+            this.fillFocusedCell(event.key);
           }
       }
     }
