@@ -18,53 +18,36 @@
 }
 
 // LOCKED cells - pre-filled by puzzle generator
-// Darkest background, boldest letter, non-interactive
 .cell-locked {
     @extend .cell-base;
-    border: 2px solid rgba(27, 67, 50, 0.6);
+    border: 2px solid var(--cell-locked-border);
     cursor: not-allowed;
-    color: #ffffff;
+    color: var(--cell-locked-text);
 
     background:
         linear-gradient(
             135deg,
-            rgba(255, 255, 255, 0.15) 0%,
+            rgba(255, 255, 255, 0.18) 0%,
             transparent 40%,
-            rgba(0, 0, 0, 0.1) 100%
+            rgba(0, 0, 0, 0.10) 100%
         ),
-        linear-gradient(
-            160deg,
-            #2d6a4f 0%,
-            #1e4d38 30%,
-            #2a5f47 60%,
-            #1b4332 100%
-        );
+        var(--cell-locked-gradient);
 
     box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.2),
-        inset 0 -1px 0 rgba(0, 0, 0, 0.15),
-        0 2px 6px rgba(0, 0, 0, 0.25);
+        inset 0 1px 0 rgba(255, 255, 255, 0.22),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.18),
+        0 2px 8px rgba(0, 0, 0, 0.30);
 
-    // Rock-like texture overlay
     &::before {
         content: '';
         position: absolute;
         inset: 0;
         background:
-            radial-gradient(
-                ellipse at 20% 30%,
-                rgba(255, 255, 255, 0.1) 0%,
-                transparent 50%
-            ),
-            radial-gradient(
-                ellipse at 80% 70%,
-                rgba(0, 0, 0, 0.08) 0%,
-                transparent 40%
-            );
+            radial-gradient(ellipse at 20% 30%, rgba(255, 255, 255, 0.12) 0%, transparent 50%),
+            radial-gradient(ellipse at 80% 70%, rgba(0, 0, 0, 0.10) 0%, transparent 40%);
         pointer-events: none;
     }
 
-    // Bottom edge highlight
     &::after {
         content: '';
         position: absolute;
@@ -72,15 +55,10 @@
         left: 0;
         right: 0;
         height: 40%;
-        background: linear-gradient(
-            to bottom,
-            transparent 0%,
-            rgba(0, 0, 0, 0.12) 100%
-        );
+        background: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.14) 100%);
         pointer-events: none;
     }
 
-    // Boldest letter weight for locked cells
     font-weight: 700;
     font-size: var(--cell-font-size, 1.2rem);
 }
@@ -88,14 +66,14 @@
 // ACTIVE cells (currently selected) - user-filled or empty
 .cell-active {
     @extend .cell-base;
-    border: 3px solid #2d6a4f;
-    background: rgba(255, 255, 255, 0.95);
-    box-shadow: 0 2px 8px rgba(45, 106, 79, 0.15);
+    border: 3px solid var(--cell-active-border);
+    background: var(--cell-active-bg);
+    box-shadow: 0 2px 10px var(--shadow-color);
     cursor: pointer;
 
     &:hover {
-        background: rgba(255, 255, 255, 1);
-        box-shadow: 0 3px 12px rgba(45, 106, 79, 0.2);
+        filter: brightness(1.04);
+        box-shadow: 0 3px 14px var(--shadow-color);
     }
 
     font-weight: 600;
@@ -105,13 +83,13 @@
 // NOT ACTIVE cells (not selected) - user-filled or empty
 .cell-not-active {
     @extend .cell-base;
-    border: 2px solid rgba(45, 106, 79, 0.35);
-    background: rgba(255, 255, 255, 0.7);
+    border: 2px solid var(--cell-inactive-border);
+    background: var(--cell-inactive-bg);
     cursor: pointer;
 
     &:hover {
-        border-color: rgba(45, 106, 79, 0.5);
-        background: rgba(255, 255, 255, 0.9);
+        border-color: var(--cell-active-border);
+        filter: brightness(1.04);
     }
 
     font-weight: 600;
@@ -120,15 +98,15 @@
 
 // USER-FILLED cells (player entered a letter) - lighter than locked
 .cell-user-filled {
-    background: rgba(200, 230, 215, 0.5) !important;
+    background: var(--cell-user-bg) !important;
 
     &.cell-active {
-        background: rgba(200, 230, 215, 0.85) !important;
-        border-color: #2d6a4f;
+        background: var(--cell-user-bg-active) !important;
+        border-color: var(--cell-active-border);
     }
 
     &.cell-not-active {
-        background: rgba(200, 230, 215, 0.4) !important;
+        background: var(--cell-user-bg) !important;
     }
 }
 
@@ -140,7 +118,7 @@ input {
     font-size: var(--cell-font-size, 1.2rem);
     font-family: "JetBrains Mono", "IBM Plex Mono", "Consolas", monospace;
     font-weight: 600;
-    color: #1a3a2a;
+    color: var(--cell-text);
     cursor: pointer;
     text-align: center;
     caret-color: transparent;
@@ -149,107 +127,91 @@ input {
     background: transparent;
     transition: all 0.15s ease;
 
-    &:focus {
-        outline: none;
-    }
+    &:focus { outline: none; }
 
-    // Locked cells - white text
     .cell-locked + input,
     .cell-locked input & {
-        color: #ffffff;
+        color: var(--cell-locked-text);
         cursor: not-allowed;
     }
 }
 
-// Prevent clicks on locked cells
 .cell-locked {
     pointer-events: none;
-
     input {
         pointer-events: none;
+        color: var(--cell-locked-text);
     }
 }
 
-// Row highlight - cells in the same row as selected cell (don't override locked/conflict)
+// Row/column highlight
 .cell-row-highlight {
     &:not(.cell-locked):not(.cell-conflict) {
-        background: rgba(45, 106, 79, 0.08) !important;
-        
+        background: var(--row-highlight) !important;
+
         &.cell-user-filled {
-            background: rgba(45, 106, 79, 0.12) !important;
+            background: var(--row-highlight-strong) !important;
         }
     }
 }
 
-// Column highlight - cells in the same column as selected cell
 .cell-col-highlight {
     &:not(.cell-locked):not(.cell-conflict) {
-        background: rgba(45, 106, 79, 0.08) !important;
-        
+        background: var(--row-highlight) !important;
+
         &.cell-user-filled {
-            background: rgba(45, 106, 79, 0.12) !important;
+            background: var(--row-highlight-strong) !important;
         }
     }
 }
 
-// Combined row AND column highlight (intersection, but not selected)
 .cell-row-highlight.cell-col-highlight {
     &:not(.cell-locked):not(.cell-conflict) {
-        background: rgba(45, 106, 79, 0.12) !important;
-        
+        background: var(--row-highlight-strong) !important;
+
         &.cell-user-filled {
-            background: rgba(45, 106, 79, 0.16) !important;
+            background: var(--row-highlight-strong) !important;
         }
     }
 }
 
-// CONFLICT cells - red tint for conflicts (takes priority over row/col highlight)
+// CONFLICT cells
 .cell-conflict {
     &.cell-active {
-        background: rgba(251, 81, 111, 0.35) !important;
-        border-color: #e63946 !important;
-        box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.3), 0 2px 8px rgba(230, 57, 70, 0.2);
+        background: var(--conflict-bg-active) !important;
+        border-color: var(--conflict-border) !important;
+        box-shadow: 0 0 0 3px var(--conflict-bg-active), 0 2px 10px var(--conflict-bg);
         animation: pulse-conflict 1.5s ease-in-out infinite;
     }
 
     &.cell-not-active {
-        background: rgba(251, 81, 111, 0.25) !important;
-        border-color: #e63946 !important;
+        background: var(--conflict-bg) !important;
+        border-color: var(--conflict-border) !important;
         animation: pulse-conflict 1.5s ease-in-out infinite;
     }
 
     &.cell-locked {
-        // Locked cells don't show conflict - they are pre-filled and correct
+        // Locked cells don't show conflict
     }
-    
-    // Conflict takes priority over row/col highlight
+
     &.cell-row-highlight,
     &.cell-col-highlight,
     &.cell-row-highlight.cell-col-highlight {
-        background: rgba(251, 81, 111, 0.25) !important;
-        border-color: #e63946 !important;
+        background: var(--conflict-bg) !important;
+        border-color: var(--conflict-border) !important;
     }
 }
 
 @keyframes pulse-conflict {
-    0%, 100% {
-        box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.3), 0 2px 8px rgba(230, 57, 70, 0.2);
-    }
-    50% {
-        box-shadow: 0 0 0 5px rgba(230, 57, 70, 0.15), 0 2px 12px rgba(230, 57, 70, 0.25);
-    }
+    0%, 100% { box-shadow: 0 0 0 3px var(--conflict-bg-active), 0 2px 8px var(--conflict-bg); }
+    50%      { box-shadow: 0 0 0 6px var(--conflict-bg), 0 2px 14px var(--conflict-bg-active); }
 }
 
 // COLORBLIND MODE STYLES
-
-// Locked cell with colorblind mode - add subtle dot indicator
 .cell-colorblind-locked {
     position: relative;
-    
-    input {
-        position: relative;
-    }
-    
+    input { position: relative; }
+
     &::before {
         content: '';
         position: absolute;
@@ -258,20 +220,16 @@ input {
         width: 6px;
         height: 6px;
         border-radius: 50%;
-        background: rgba(255, 255, 255, 0.7);
+        background: rgba(255, 255, 255, 0.75);
         pointer-events: none;
         z-index: 3;
     }
 }
 
-// Conflict cell with colorblind mode - add diagonal stripe pattern
 .cell-colorblind-conflict {
     position: relative;
-    
-    input {
-        position: relative;
-    }
-    
+    input { position: relative; }
+
     &::after {
         content: '';
         position: absolute;
@@ -280,28 +238,18 @@ input {
             45deg,
             transparent,
             transparent 3px,
-            rgba(230, 57, 70, 0.3) 3px,
-            rgba(230, 57, 70, 0.3) 6px
+            var(--conflict-border) 3px,
+            var(--conflict-border) 6px
         );
+        opacity: 0.35;
         pointer-events: none;
         border-radius: 6px;
         z-index: 1;
     }
-    
-    &.cell-active {
-        &::after {
-            background: repeating-linear-gradient(
-                45deg,
-                transparent,
-                transparent 3px,
-                rgba(230, 57, 70, 0.4) 3px,
-                rgba(230, 57, 70, 0.4) 6px
-            );
-        }
-    }
+
+    &.cell-active::after { opacity: 0.45; }
 }
 
-// Visual indicators for colorblind mode (rendered as separate elements)
 .colorblind-indicator {
     position: absolute;
     pointer-events: none;
@@ -314,7 +262,7 @@ input {
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.75);
 }
 
 .conflict-indicator {
@@ -324,20 +272,28 @@ input {
     height: 0;
     border-left: 8px solid transparent;
     border-right: 8px solid transparent;
-    border-top: 8px solid #e63946;
+    border-top: 8px solid var(--conflict-border);
     background: transparent;
 }
 
-// FOCUS RING - visible during keyboard interaction
-// Using outline (not box-shadow) for screen reader clarity
-input:focus-visible {
-    outline: 3px solid #2d6a4f;
+input:focus-visible,
+.cell-active input:focus-visible,
+.cell-not-active input:focus-visible {
+    outline: 3px solid var(--cell-active-border);
     outline-offset: 2px;
 }
 
-// Cell with focus - shows visible focus ring
-.cell-active input:focus-visible,
-.cell-not-active input:focus-visible {
-    outline: 3px solid #2d6a4f;
-    outline-offset: 2px;
+// Neon theme: glow on locked + active cells
+:host-context(body[data-theme="neon"]) {
+    .cell-locked {
+        box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.18),
+            inset 0 -1px 0 rgba(0, 0, 0, 0.20),
+            0 0 14px rgba(0, 255, 247, 0.30),
+            0 0 4px rgba(255, 0, 222, 0.25);
+    }
+    .cell-active {
+        box-shadow: 0 0 0 1px rgba(255, 0, 222, 0.5), 0 0 14px rgba(255, 0, 222, 0.35);
+    }
+    input { color: var(--cell-text); }
 }

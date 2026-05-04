@@ -1,5 +1,7 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { SettingsService } from '../services/settings.service';
+import { ThemeService } from '../services/theme.service';
+import { ThemeName, THEME_LABELS, THEME_NAMES } from '../constants';
 
 @Component({
   selector: 'app-settings',
@@ -13,12 +15,25 @@ export class SettingsComponent implements OnInit {
   soundEnabled: boolean = false;
   colorblindModeEnabled: boolean = false;
 
-  constructor(private settingsService: SettingsService) {}
+  readonly themes = THEME_NAMES;
+  readonly themeLabels = THEME_LABELS;
+  selectedTheme: ThemeName = 'green';
+
+  constructor(
+    private settingsService: SettingsService,
+    private themeService: ThemeService
+  ) {}
 
   ngOnInit(): void {
     this.assistModeEnabled = this.settingsService.isAssistModeEnabled();
     this.soundEnabled = this.settingsService.isSoundEnabled();
     this.colorblindModeEnabled = this.settingsService.isColorblindModeEnabled();
+    this.selectedTheme = this.themeService.getCurrentTheme();
+  }
+
+  onSelectTheme(theme: ThemeName): void {
+    this.selectedTheme = theme;
+    this.themeService.setTheme(theme);
   }
 
   onToggleAssistMode(): void {

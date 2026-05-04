@@ -21,6 +21,7 @@ export interface ConfettiParticle {
   life: number;
 }
 import { SettingsService } from '../services/settings.service';
+import { ThemeService } from '../services/theme.service';
 import { HistoryService } from '../services/history.service';
 import { StatsService } from '../services/stats.service';
 import { ShareService } from '../services/share.service';
@@ -112,8 +113,11 @@ export class BoardComponent implements OnInit, OnDestroy {
     private settingsService: SettingsService,
     private historyService: HistoryService,
     private statsService: StatsService,
-    private shareService: ShareService
+    private shareService: ShareService,
+    private themeService: ThemeService
   ) {}
+
+  private themeSubscription?: Subscription;
 
   ngOnInit(): void {
     this.loadWordsFile();
@@ -156,6 +160,15 @@ export class BoardComponent implements OnInit, OnDestroy {
       this.soundEnabled = settings.soundEnabled;
     });
 
+    // Subscribe to theme changes — repaint cells with the new palette.
+    this.themeSubscription = this.themeService.theme$.subscribe(() => {
+      if (this.board.length === 0) return;
+      // Re-paint locked + active/inactive cells; preserve gradient highlights
+      // for any currently-found word + duplicate flashes by re-running the
+      // appropriate post-state recoloring.
+      this.repaintBoardForTheme();
+    });
+
     // Check for prefers-reduced-motion
     this.checkPrefersReducedMotion();
     if (typeof window !== 'undefined') {
@@ -183,6 +196,9 @@ export class BoardComponent implements OnInit, OnDestroy {
     }
     if (this.soundSubscription) {
       this.soundSubscription.unsubscribe();
+    }
+    if (this.themeSubscription) {
+      this.themeSubscription.unsubscribe();
     }
   }
 
@@ -942,6 +958,19 @@ export class BoardComponent implements OnInit, OnDestroy {
 
   reverseWord(word: string) {
     return word.split('').reverse().join('');
+  }
+
+  private repaintBoardForTheme(): void {
+    // Cell backgrounds are inline strings sourced from CELL_COLOR; the theme
+    // service has already mutated those values, so a default-color pass picks
+    // up the new palette. If a "found word" gradient is currently displayed,
+    // re-run the gradient coloring so it uses the new theme's stops.
+    this.setDefaultColors();
+    if (this.failureReason === FAILURE_INFO.WORD_EXISTS && this.foundWord) {
+      this.checkIfTheBoardIsSolved(this.board);
+    } else if (this.checkIfTheBoardIsFullyFilled(this.board)) {
+      this.checkIfTheBoardIsSolved(this.board);
+    }
   }
 
   setDefaultColors() {

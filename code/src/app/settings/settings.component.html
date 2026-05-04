@@ -11,6 +11,32 @@
         </div>
         
         <div class="settings-content">
+            <div class="setting-item setting-item--stack">
+                <div class="setting-info">
+                    <span class="setting-label">Theme</span>
+                    <span class="setting-description">Pick a color palette for the board</span>
+                </div>
+                <div class="theme-grid">
+                    <button
+                        *ngFor="let t of themes"
+                        type="button"
+                        class="theme-swatch"
+                        [class.active]="selectedTheme === t"
+                        [attr.data-theme-preview]="t"
+                        (click)="onSelectTheme(t)"
+                        [attr.aria-label]="'Select ' + themeLabels[t] + ' theme'">
+                        <span class="theme-swatch__preview">
+                            <span class="theme-swatch__dot theme-swatch__dot--1"></span>
+                            <span class="theme-swatch__dot theme-swatch__dot--2"></span>
+                            <span class="theme-swatch__dot theme-swatch__dot--3"></span>
+                        </span>
+                        <span class="theme-swatch__label">{{ themeLabels[t] }}</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="setting-divider"></div>
+
             <div class="setting-item">
                 <div class="setting-info">
                     <span class="setting-label">Assist Mode</span>
