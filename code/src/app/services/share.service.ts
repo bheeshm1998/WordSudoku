@@ -42,12 +42,20 @@ wordsudoku.xyz`;
     let grid = '\n';
     for (const row of board) {
       for (const cell of row) {
-        // 🟩 for locked cells (prefilled), ⬜ for user-filled cells
-        grid += cell.isLocked ? '🟩' : '⬜';
+        grid += this.getLetterEmoji(cell.letter, cell.isLocked);
       }
       grid += '\n';
     }
     return grid;
+  }
+
+  private getLetterEmoji(letter: string, isLocked: boolean): string {
+    const upper = letter?.toUpperCase();
+    const idx = upper ? upper.charCodeAt(0) - 65 : -1;
+    if (idx < 0 || idx > 25) return isLocked ? '🟦' : '⬜';
+    // Prefilled: Squared Latin Capital Letters U+1F130-U+1F149 (outlined box, like 🅿️ style)
+    // User-filled: Negative Squared Latin Capital U+1F150-U+1F169 (filled box, like 🅰️🅱️ style)
+    return String.fromCodePoint(isLocked ? 0x1F130 + idx : 0x1F150 + idx) + '️';
   }
 
   /**
