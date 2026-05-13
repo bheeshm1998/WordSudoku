@@ -20,8 +20,7 @@
         </button>
     </div>
 
-    <div class="size-selector">
-        <span class="size-label">Board Size:</span>
+    <div class="controls-row">
         <div class="size-options">
             <button *ngFor="let size of availableBoardSizes"
                     class="size-btn"
@@ -31,10 +30,7 @@
                 {{ size }}x{{ size }}
             </button>
         </div>
-    </div>
-
-    <div class="difficulty-selector">
-        <span class="difficulty-label">Difficulty:</span>
+        <div class="controls-divider"></div>
         <div class="difficulty-options">
             <button *ngFor="let diff of availableDifficulties"
                     class="difficulty-btn"
