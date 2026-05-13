@@ -30,6 +30,10 @@ export class CellComponent implements OnInit {
 
   onCellFocus(): void {
     this.cellFocused.emit({row: this.cellInfo.row, col: this.cellInfo.col});
+    if (!this.cellInfo.isLocked) {
+      // Defer so the browser doesn't override the selection after focus settles
+      setTimeout(() => this.cellInput.nativeElement.select(), 0);
+    }
   }
 
   // onKeyPress(event: any){
@@ -57,13 +61,12 @@ export class CellComponent implements OnInit {
   // }
 
   onClickInput(){
-    // Prevent any interaction with locked cells
     if (this.cellInfo.isLocked) {
       return;
     }
     this.cellClick.emit({row: this.cellInfo.row, col: this.cellInfo.col});
-    this.cellInput.nativeElement.setSelectionRange(this.cellInput.nativeElement.value.length, this.cellInput.nativeElement.value.length);
-    // so that the cursor always is at the end of the input text
+    // Select all so typing replaces the existing letter rather than appending
+    this.cellInput.nativeElement.select();
   }
 
   onInputEvent(event: any){
@@ -81,20 +84,21 @@ export class CellComponent implements OnInit {
       return;
     }
 
-    let inputText: string = (event.target as HTMLInputElement).value || '';
-    inputText = inputText.toUpperCase();
-    inputText = inputText.charAt(inputText.length - 1);
+    const raw = ((event.target as HTMLInputElement).value || '').toUpperCase();
+    // Strip everything that isn't A-Z (handles numbers silently accumulating on mobile)
+    const lettersOnly = raw.replace(/[^A-Z]/g, '');
+    const validChar = lettersOnly.charAt(lettersOnly.length - 1);
 
-    // Only allow A-Z letters
-    if (!/^[A-Z]$/.test(inputText)) {
+    // Always hard-reset the DOM value so nothing accumulates invisibly
+    if (!validChar) {
       this.cellInput.nativeElement.value = this.previousValue;
       return;
     }
 
-    this.cellInput.nativeElement.value = inputText;
-    this.cellInfo.letter = inputText;
-    this.previousValue = inputText;
-    this.cellValueChange.emit(inputText);
+    this.cellInput.nativeElement.value = validChar;
+    this.cellInfo.letter = validChar;
+    this.previousValue = validChar;
+    this.cellValueChange.emit(validChar);
   }
 
   getAriaLabel(): string {
