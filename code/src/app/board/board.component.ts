@@ -831,14 +831,18 @@ export class BoardComponent implements OnInit, OnDestroy {
   colorDuplicateCharacters(board: Cell[][], char: string, index: number, isRow: boolean) {
     if (isRow) {
       for (let i = 0; i < BOARD_SIZE; i++) {
-        if (board[index][i].letter === char && !board[index][i].isLocked) {
-          board[index][i].background = CELL_COLOR.DUPLICATE_CHAR_CELL;
+        if (board[index][i].letter === char) {
+          board[index][i].background = board[index][i].isLocked
+            ? CELL_COLOR.DUPLICATE_CHAR_CELL_LOCKED
+            : CELL_COLOR.DUPLICATE_CHAR_CELL;
         }
       }
     } else {
       for (let i = 0; i < BOARD_SIZE; i++) {
-        if (board[i][index].letter === char && !board[i][index].isLocked) {
-          board[i][index].background = CELL_COLOR.DUPLICATE_CHAR_CELL;
+        if (board[i][index].letter === char) {
+          board[i][index].background = board[i][index].isLocked
+            ? CELL_COLOR.DUPLICATE_CHAR_CELL_LOCKED
+            : CELL_COLOR.DUPLICATE_CHAR_CELL;
         }
       }
     }

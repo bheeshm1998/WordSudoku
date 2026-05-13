@@ -91,6 +91,7 @@ interface ThemePalette {
     activeCell: string;
     inactiveCell: string;
     duplicateCharCell: string;
+    duplicateCharCellLocked: string;
     // Five-stop gradient used for highlighting a discovered word, from the
     // "anchor" end (most saturated) to the trailing end (faded).
     wordGradientStops: string[];
@@ -102,6 +103,7 @@ export const THEME_PALETTES: Record<ThemeName, ThemePalette> = {
         activeCell: "#B0D9B1",
         inactiveCell: "#D0E7D2",
         duplicateCharCell: "rgba(251, 81, 111, 0.82)",
+        duplicateCharCellLocked: "rgba(190, 18, 45, 0.90)",
         wordGradientStops: [
             "rgba(255,137,90,1)",
             "rgba(255,148,106,1)",
@@ -119,6 +121,7 @@ export const THEME_PALETTES: Record<ThemeName, ThemePalette> = {
         activeCell: "#bfdbfe",
         inactiveCell: "#dbeafe",
         duplicateCharCell: "rgba(244, 63, 94, 0.82)",
+        duplicateCharCellLocked: "rgba(175, 12, 38, 0.90)",
         wordGradientStops: [
             "rgba(255,170,77,1)",
             "rgba(255,184,99,1)",
@@ -136,6 +139,7 @@ export const THEME_PALETTES: Record<ThemeName, ThemePalette> = {
         activeCell: "#2d1b69",
         inactiveCell: "#1f0d4a",
         duplicateCharCell: "rgba(255, 45, 146, 0.85)",
+        duplicateCharCellLocked: "rgba(200, 0, 90, 0.92)",
         wordGradientStops: [
             "rgba(0,255,247,1)",
             "rgba(45,212,255,1)",
@@ -153,6 +157,7 @@ export const THEME_PALETTES: Record<ThemeName, ThemePalette> = {
         activeCell: "#475569",
         inactiveCell: "#334155",
         duplicateCharCell: "rgba(220, 38, 38, 0.85)",
+        duplicateCharCellLocked: "rgba(153, 20, 20, 0.92)",
         wordGradientStops: [
             "rgba(245,158,11,1)",
             "rgba(251,176,46,1)",
@@ -190,6 +195,7 @@ export function applyThemePalette(name: ThemeName): void {
     CELL_COLOR.ACTIVE_CELL = palette.activeCell;
     CELL_COLOR.INACTIVE_CELL = palette.inactiveCell;
     CELL_COLOR.DUPLICATE_CHAR_CELL = palette.duplicateCharCell;
+    CELL_COLOR.DUPLICATE_CHAR_CELL_LOCKED = palette.duplicateCharCellLocked;
     const grad = buildGradient(palette.wordGradientStops);
     // Wipe and repopulate so previous theme keys don't linger.
     for (const k of Object.keys(GRADIENT)) {
@@ -245,6 +251,7 @@ export const CELL_COLOR: any = {
     ACTIVE_CELL: "#B0D9B1",
     INACTIVE_CELL: "#D0E7D2",
     DUPLICATE_CHAR_CELL: "rgba(251, 81, 111, 0.82)",
+    DUPLICATE_CHAR_CELL_LOCKED: "rgba(190, 18, 45, 0.90)",
 }
 
 export const WORDS_FILE_PATH = 'assets/final_words.txt';

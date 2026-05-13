@@ -191,12 +191,13 @@ input {
     }
 
     &.cell-locked {
-        // Locked cells don't show conflict
+        background: var(--conflict-bg-locked) !important;
+        animation: pulse-conflict 1.5s ease-in-out infinite;
     }
 
-    &.cell-row-highlight,
-    &.cell-col-highlight,
-    &.cell-row-highlight.cell-col-highlight {
+    &.cell-row-highlight:not(.cell-locked),
+    &.cell-col-highlight:not(.cell-locked),
+    &.cell-row-highlight.cell-col-highlight:not(.cell-locked) {
         background: var(--conflict-bg) !important;
         border-color: var(--conflict-border) !important;
     }
