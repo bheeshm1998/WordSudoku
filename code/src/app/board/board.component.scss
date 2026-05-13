@@ -23,7 +23,7 @@
     padding-right: 5rem;
 
     .game-title {
-        font-family: "JetBrains Mono", monospace;
+        font-family: "Nunito", sans-serif;
         font-size: 1.5rem;
         font-weight: 700;
         color: var(--text-primary);
@@ -45,7 +45,7 @@
     }
 
     .game-rules {
-        font-family: "JetBrains Mono", monospace;
+        font-family: "Nunito", sans-serif;
         font-size: 0.72rem;
         font-weight: 400;
         color: var(--text-secondary);
@@ -116,7 +116,7 @@
 
 .size-btn {
     border: none;
-    font-family: "JetBrains Mono", monospace;
+    font-family: "Nunito", sans-serif;
     font-size: 0.72rem;
     font-weight: 600;
     padding: 0.45rem 0.75rem;
@@ -142,7 +142,7 @@
 
 .difficulty-btn {
     border: none;
-    font-family: "JetBrains Mono", monospace;
+    font-family: "Nunito", sans-serif;
     font-size: 0.72rem;
     font-weight: 600;
     padding: 0.45rem 0.75rem;
@@ -189,7 +189,7 @@
 }
 
 .timer-label {
-    font-family: "JetBrains Mono", monospace;
+    font-family: "Nunito", sans-serif;
     font-size: 0.58rem;
     font-weight: 600;
     letter-spacing: 1.5px;
@@ -198,7 +198,7 @@
 }
 
 .timer-value {
-    font-family: "JetBrains Mono", monospace;
+    font-family: "Nunito", sans-serif;
     font-size: 1.15rem;
     font-weight: 700;
     letter-spacing: 0.5px;
@@ -214,7 +214,7 @@
 }
 
 .new-best-indicator {
-    font-family: "JetBrains Mono", monospace;
+    font-family: "Nunito", sans-serif;
     font-size: 0.65rem;
     font-weight: 700;
     color: var(--accent-on);
@@ -270,7 +270,7 @@
     padding: 0.5rem 1rem;
     background: linear-gradient(135deg, var(--accent), var(--accent-light));
     color: var(--accent-on);
-    font-family: "JetBrains Mono", monospace;
+    font-family: "Nunito", sans-serif;
     font-size: 0.8rem;
     font-weight: 600;
     border: none;
@@ -316,7 +316,7 @@
     flex-wrap: wrap;
 
     .failure-detail {
-        font-family: "JetBrains Mono", monospace;
+        font-family: "Nunito", sans-serif;
         font-size: 0.9rem;
         font-weight: 600;
         color: var(--danger);
@@ -328,7 +328,7 @@
     }
 
     .solve-status {
-        font-family: "JetBrains Mono", monospace;
+        font-family: "Nunito", sans-serif;
         font-size: 1.25rem;
         font-weight: 800;
         color: var(--text-primary);
@@ -345,7 +345,7 @@
     }
 
     .strict-mode-indicator {
-        font-family: "JetBrains Mono", monospace;
+        font-family: "Nunito", sans-serif;
         font-size: 0.78rem;
         font-weight: 600;
         color: var(--warning-text);
@@ -360,7 +360,7 @@
 .meaning-btn {
     flex-shrink: 0;
     border: none;
-    font-family: "JetBrains Mono", monospace;
+    font-family: "Nunito", sans-serif;
     font-size: 0.78rem;
     font-weight: 600;
     padding: 0.45rem 0.9rem;
@@ -389,7 +389,7 @@
     height: 2.75rem;
     background: linear-gradient(135deg, var(--accent), var(--accent-light));
     color: var(--accent-on);
-    font-family: "JetBrains Mono", monospace;
+    font-family: "Nunito", sans-serif;
     font-size: 0.95rem;
     font-weight: 600;
     letter-spacing: 0.5px;
@@ -422,7 +422,7 @@
     height: 2.75rem;
     background: linear-gradient(135deg, var(--info), var(--info-light));
     color: var(--accent-on);
-    font-family: "JetBrains Mono", monospace;
+    font-family: "Nunito", sans-serif;
     font-size: 0.95rem;
     font-weight: 600;
     letter-spacing: 0.5px;
@@ -454,7 +454,7 @@
     transform: translateX(-50%);
     background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
     color: var(--surface);
-    font-family: "JetBrains Mono", monospace;
+    font-family: "Nunito", sans-serif;
     font-size: 0.9rem;
     font-weight: 600;
     padding: 0.75rem 1.5rem;

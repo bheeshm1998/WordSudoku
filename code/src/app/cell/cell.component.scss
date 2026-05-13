@@ -11,7 +11,7 @@
     position: relative;
     overflow: hidden;
     transition: all 0.15s ease;
-    font-family: "JetBrains Mono", "IBM Plex Mono", "Consolas", monospace;
+    font-family: "Nunito", sans-serif;
     font-weight: 600;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
@@ -116,7 +116,7 @@ input {
     height: 100%;
     border: 0;
     font-size: var(--cell-font-size, 1.2rem);
-    font-family: "JetBrains Mono", "IBM Plex Mono", "Consolas", monospace;
+    font-family: "Nunito", sans-serif;
     font-weight: 600;
     color: var(--cell-text);
     cursor: pointer;
