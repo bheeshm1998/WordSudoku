@@ -30,6 +30,7 @@
     border: 1px solid var(--surface-border);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
+    overflow: hidden;
 }
 
 @keyframes slideUp {
