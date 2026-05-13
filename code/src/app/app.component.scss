@@ -3,20 +3,22 @@
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    padding: 1.5rem 1rem;
+    padding: 1rem;
     width: 100%;
 }
 
-// Tablet/iPad: 768px - 1024px
+// Tablet/iPad: no horizontal padding so the game-board can fill the screen width.
 @media (min-width: 768px) and (max-width: 1024px) {
     .main-container {
-        padding: 1rem 0.75rem;
+        padding: 0.75rem 0;
+        align-items: flex-start;
     }
 }
 
-// Phone: max-width: 767px
+// Phone: flush against the screen edges on all sides.
 @media (max-width: 767px) {
     .main-container {
-        padding: 0.5rem 0.25rem;
+        padding: 0;
+        align-items: flex-start;
     }
 }

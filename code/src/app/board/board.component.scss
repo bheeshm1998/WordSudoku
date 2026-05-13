@@ -3,7 +3,7 @@
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border-radius: 22px;
-    padding: 1.25rem;
+    padding: 1rem 1.25rem;
     box-shadow:
         0 6px 28px var(--shadow-color),
         0 12px 56px var(--shadow-soft);
@@ -17,7 +17,7 @@
 }
 
 .game-header {
-    margin-bottom: 1.25rem;
+    margin-bottom: 0.875rem;
     display: block;
     position: relative;
     padding-right: 5rem;
@@ -91,7 +91,7 @@
 .controls-row {
     display: flex;
     align-items: center;
-    margin-bottom: 1rem;
+    margin-bottom: 0.625rem;
     padding: 0.5rem 0.75rem;
     background: var(--surface-soft);
     border-radius: 10px;
@@ -171,10 +171,10 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.75rem 1rem;
+    padding: 0.625rem 1rem;
     background: var(--surface-soft);
     border-radius: 12px;
-    margin-bottom: 1.25rem;
+    margin-bottom: 0.75rem;
     border: 1px solid var(--surface-border);
 }
 
@@ -237,7 +237,6 @@
     grid-auto-rows: 1fr;
     aspect-ratio: 1;
     border-radius: 14px;
-    width: 100%;
     padding: 0.5rem;
     gap: 4px;
     background: var(--surface-board);
@@ -246,6 +245,15 @@
     overflow: visible;
     box-sizing: border-box;
     border: 1px solid var(--surface-border);
+
+    // The board side is the smaller of the parent's content width and the
+    // viewport-height budget left over after the surrounding rows. This keeps
+    // the board grid the same size whether 5x5/7x7/9x9 is selected (cells just
+    // scale via 1fr columns/rows) AND keeps the full game pinned inside the
+    // viewport on laptops, so no vertical scrollbar appears. Mobile overrides
+    // this to fill the screen width — see the mobile media query.
+    --board-side: min(100%, calc(100vh - 28rem));
+    width: var(--board-side);
 
     .cell {
         margin: 0;
@@ -259,8 +267,8 @@
     display: flex;
     justify-content: center;
     gap: 1rem;
-    margin-top: 0.75rem;
-    padding: 0.5rem;
+    margin-top: 0.5rem;
+    padding: 0.25rem;
 }
 
 .undo-redo-btn {
@@ -307,12 +315,12 @@
 .board-9x9 { --cell-font-size: 0.95rem; gap: 4px; }
 
 .feedback-area {
-    min-height: 3.5rem;
+    min-height: 3rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 0.5rem;
-    padding: 0.5rem 0.25rem 0.25rem;
+    padding: 0.25rem 0.25rem 0.25rem;
     flex-wrap: wrap;
 
     .failure-detail {
@@ -386,7 +394,7 @@
 
 .restart-btn {
     width: 100%;
-    height: 2.75rem;
+    height: 2.5rem;
     background: linear-gradient(135deg, var(--accent), var(--accent-light));
     color: var(--accent-on);
     font-family: "Nunito", sans-serif;
@@ -397,7 +405,7 @@
     border-radius: 10px;
     cursor: pointer;
     transition: all 0.2s;
-    margin-top: 0.25rem;
+    margin-top: 0;
     box-shadow: 0 4px 14px var(--shadow-color);
 
     &:hover {
@@ -531,67 +539,79 @@
 }
 
 @media (min-width: 768px) and (max-width: 1024px) {
-    .game-board { padding: 1rem; max-width: 420px; }
+    // Game-board fills the entire screen width on iPad — no side gaps.
+    // Border-radius stays so the surface still reads as a card.
+    .game-board { padding: 1rem; max-width: 100%; }
     .game-header {
-        margin-bottom: 1rem;
+        margin-bottom: 0.75rem;
         .game-title { font-size: 1.3rem; }
         .game-rules { font-size: 0.68rem; }
         .settings-btn { padding: 0.4rem; right: 2rem; svg { width: 20px; height: 20px; } }
         .stats-btn { padding: 0.4rem; svg { width: 20px; height: 20px; } }
     }
-    .controls-row { margin-bottom: 0.875rem; padding: 0.4rem 0.75rem; }
+    .controls-row { margin-bottom: 0.625rem; padding: 0.4rem 0.75rem; }
     .size-btn { font-size: 0.68rem; padding: 0.38rem 0.68rem; }
-    .timer-row { padding: 0.6rem 0.875rem; margin-bottom: 1rem; }
+    .timer-row { padding: 0.55rem 0.875rem; margin-bottom: 0.625rem; }
     .timer-label { font-size: 0.56rem; }
     .timer-value { font-size: 1.05rem; }
     .board-5x5 { --cell-font-size: 1.45rem; }
     .board-7x7 { --cell-font-size: 1.05rem; }
     .board-9x9 { --cell-font-size: 0.85rem; }
     .feedback-area {
-        min-height: 3rem;
+        min-height: 2.75rem;
         .failure-detail { font-size: 0.8rem; }
         .solve-status { font-size: 1.1rem; }
         .strict-mode-indicator { font-size: 0.72rem; }
     }
     .meaning-btn { font-size: 0.72rem; padding: 0.4rem 0.8rem; }
     .restart-btn,
-    .share-btn { height: 2.5rem; font-size: 0.88rem; }
-    .undo-redo-row { margin-top: 0.6rem; padding: 0.4rem; gap: 0.875rem; }
+    .share-btn { height: 2.5rem; font-size: 0.88rem; margin-top: 0; }
+    .undo-redo-row { margin-top: 0.4rem; padding: 0.25rem; gap: 0.875rem; }
     .undo-redo-btn { padding: 0.45rem 0.9rem; font-size: 0.75rem; svg { width: 15px; height: 15px; } }
 }
 
 @media (max-width: 767px) {
-    .game-board { padding: 0.85rem; max-width: 100%; border-radius: 16px; }
+    // Phone: game-board fills the screen edge-to-edge with no border,
+    // border-radius or outer shadow — looks like a full-screen app surface.
+    .game-board {
+        padding: 0.85rem;
+        max-width: 100%;
+        border-radius: 0;
+        border: none;
+        box-shadow: none;
+    }
     .game-header {
-        margin-bottom: 0.875rem;
+        margin-bottom: 0.75rem;
         padding-right: 4.25rem;
         .game-title { font-size: 1.1rem; }
         .game-rules { font-size: 0.6rem; margin-top: 0.6rem; }
         .settings-btn { padding: 0.35rem; right: 1.75rem; svg { width: 18px; height: 18px; } }
         .stats-btn { padding: 0.35rem; svg { width: 18px; height: 18px; } }
     }
-    .controls-row { margin-bottom: 0.75rem; padding: 0.35rem 0.5rem; }
+    .controls-row { margin-bottom: 0.5rem; padding: 0.35rem 0.5rem; }
     .controls-divider { margin: 0 0.5rem; }
     .size-btn,
     .difficulty-btn { font-size: 0.6rem; padding: 0.3rem 0.5rem; }
-    .timer-row { padding: 0.4rem 0.6rem; margin-bottom: 0.875rem; }
+    .timer-row { padding: 0.4rem 0.6rem; margin-bottom: 0.5rem; }
     .timer-label { font-size: 0.5rem; }
     .timer-value { font-size: 0.9rem; }
-    .board { padding: 0.4rem; }
+    // Phone: the board grid spans the full game-board width — width drives the
+    // height via aspect-ratio, so the viewport-height clamp above is bypassed.
+    .board { padding: 0.4rem; --board-side: 100%; }
     .board-5x5 { --cell-font-size: 1.3rem; gap: 5px; }
     .board-7x7 { --cell-font-size: 1rem;   gap: 4px; }
     .board-9x9 { --cell-font-size: 0.78rem; gap: 3px; }
     .feedback-area {
-        min-height: 2.5rem;
-        padding: 0.35rem 0.2rem 0.2rem;
+        min-height: 2.25rem;
+        padding: 0.25rem 0.2rem 0.2rem;
         .failure-detail { font-size: 0.7rem; padding: 0.3rem 0.4rem; }
         .solve-status { font-size: 1rem; padding: 0.35rem; }
         .strict-mode-indicator { font-size: 0.65rem; padding: 0.25rem 0.4rem; }
     }
     .meaning-btn { font-size: 0.65rem; padding: 0.35rem 0.6rem; }
     .restart-btn,
-    .share-btn { height: 2.25rem; font-size: 0.8rem; }
-    .undo-redo-row { margin-top: 0.5rem; padding: 0.35rem; gap: 0.75rem; }
+    .share-btn { height: 2.25rem; font-size: 0.8rem; margin-top: 0; }
+    .undo-redo-row { margin-top: 0.35rem; padding: 0.25rem; gap: 0.75rem; }
     .undo-redo-btn { padding: 0.4rem 0.75rem; font-size: 0.7rem; svg { width: 14px; height: 14px; } }
 }
 
