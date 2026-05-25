@@ -3,7 +3,7 @@ import { BehaviorSubject } from 'rxjs';
 import { applyThemePalette, ThemeName, THEME_NAMES } from '../constants';
 
 const STORAGE_KEY = 'wordSudoku_theme';
-const DEFAULT_THEME: ThemeName = 'green';
+const DEFAULT_THEME: ThemeName = 'blue';
 
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
