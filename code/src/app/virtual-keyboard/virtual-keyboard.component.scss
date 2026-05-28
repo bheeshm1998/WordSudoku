@@ -19,6 +19,10 @@
     justify-content: center;
     gap: 5px;
     width: 100%;
+
+    // Stagger rows 2 and 3 like a real keyboard.
+    &:nth-child(2) { padding-left: 5%; padding-right: 5%; }
+    &:nth-child(3) { padding-left: 3%; }
 }
 
 .kb-key {
