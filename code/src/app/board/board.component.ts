@@ -484,11 +484,11 @@ export class BoardComponent implements OnInit, OnDestroy {
     }
     this.onCellClick(row, col);
     
-    // Focus the cell input element
+    // Focus the cell button element
     setTimeout(() => {
-      const cellInput = document.querySelector(`[data-row="${row}"][data-col="${col}"] input`);
-      if (cellInput) {
-        (cellInput as HTMLInputElement).focus();
+      const cellButton = document.querySelector(`[data-row="${row}"][data-col="${col}"] button.cell-button`);
+      if (cellButton) {
+        (cellButton as HTMLButtonElement).focus();
       }
     }, 0);
   }
@@ -539,17 +539,50 @@ export class BoardComponent implements OnInit, OnDestroy {
   }
 
   private fillFocusedCell(letter: string): void {
-    if (this.focusedRow < 0 || this.focusedCol < 0) return;
+    if (this.disableUserAction) return;
+    if (this.focusedRow < 0 || this.focusedCol < 0) {
+      // Auto-select the first non-locked, unfilled cell so the virtual keyboard
+      // works even when the user hasn't tapped a cell yet.
+      const target = this.findFirstEditableCell();
+      if (!target) return;
+      this.onCellClick(target.row, target.col);
+    }
     if (this.board[this.focusedRow][this.focusedCol].isLocked) return;
-    
+
     this.onCellValueChange(letter.toUpperCase(), this.focusedRow, this.focusedCol);
   }
 
   private clearFocusedCell(): void {
+    if (this.disableUserAction) return;
     if (this.focusedRow < 0 || this.focusedCol < 0) return;
     if (this.board[this.focusedRow][this.focusedCol].isLocked) return;
-    
+
     this.onCellValueChange('', this.focusedRow, this.focusedCol);
+  }
+
+  private findFirstEditableCell(): { row: number, col: number } | null {
+    for (let i = 0; i < BOARD_SIZE; i++) {
+      for (let j = 0; j < BOARD_SIZE; j++) {
+        if (!this.board[i][j].isLocked && this.board[i][j].letter === '') {
+          return { row: i, col: j };
+        }
+      }
+    }
+    // Fall back to first non-locked cell (board may be fully filled)
+    for (let i = 0; i < BOARD_SIZE; i++) {
+      for (let j = 0; j < BOARD_SIZE; j++) {
+        if (!this.board[i][j].isLocked) return { row: i, col: j };
+      }
+    }
+    return null;
+  }
+
+  onVirtualKeyPress(letter: string): void {
+    this.fillFocusedCell(letter);
+  }
+
+  onVirtualBackspace(): void {
+    this.clearFocusedCell();
   }
 
   initializeTheBoard() {
@@ -785,12 +818,12 @@ export class BoardComponent implements OnInit, OnDestroy {
           let validationStatus = this.validateWord(word);
           if (validationStatus.wordAlreadyExists) {
             if (validationStatus.doesReverseExist) {
-              this.failureDetail = this.reverseWord(word.toUpperCase()) + " exists";
+              this.failureDetail = this.reverseWord(word.toUpperCase()) + " is a meaningful word";
               this.failureReason = FAILURE_INFO.WORD_EXISTS;
               this.foundWord = this.reverseWord(word.toUpperCase());
               this.colorExistingWord(this.board, row, j, row, i);
             } else {
-              this.failureDetail = word + " exists";
+              this.failureDetail = word + " is a meaningful word";
               this.failureReason = FAILURE_INFO.WORD_EXISTS;
               this.foundWord = word;
               this.colorExistingWord(this.board, row, i, row, j);
@@ -808,12 +841,12 @@ export class BoardComponent implements OnInit, OnDestroy {
           let validationStatus = this.validateWord(word);
           if (validationStatus.wordAlreadyExists) {
             if (validationStatus.doesReverseExist) {
-              this.failureDetail = this.reverseWord(word.toUpperCase()) + " exists";
+              this.failureDetail = this.reverseWord(word.toUpperCase()) + " is a meaningful word";
               this.failureReason = FAILURE_INFO.WORD_EXISTS;
               this.foundWord = this.reverseWord(word.toUpperCase());
               this.colorExistingWord(this.board, j, col, i, col);
             } else {
-              this.failureDetail = word + " exists";
+              this.failureDetail = word + " is a meaningful word";
               this.failureReason = FAILURE_INFO.WORD_EXISTS;
               this.foundWord = word;
               this.colorExistingWord(this.board, i, col, j, col);

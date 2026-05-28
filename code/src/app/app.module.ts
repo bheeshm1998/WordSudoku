@@ -10,6 +10,7 @@ import { WordMeaningComponent } from './word-meaning/word-meaning.component';
 import { FormsModule } from '@angular/forms';
 import { SettingsComponent } from './settings/settings.component';
 import { StatsComponent } from './stats/stats.component';
+import { VirtualKeyboardComponent } from './virtual-keyboard/virtual-keyboard.component';
 
 @NgModule({
   declarations: [
@@ -18,7 +19,8 @@ import { StatsComponent } from './stats/stats.component';
     CellComponent,
     WordMeaningComponent,
     SettingsComponent,
-    StatsComponent
+    StatsComponent,
+    VirtualKeyboardComponent
   ],
   imports: [
     BrowserModule,

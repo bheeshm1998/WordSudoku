@@ -1,0 +1,128 @@
+.virtual-keyboard {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+    margin-top: 0.5rem;
+    padding: 0.5rem 0.25rem;
+    background: var(--surface-soft);
+    border-radius: 12px;
+    border: 1px solid var(--surface-border);
+    box-sizing: border-box;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+}
+
+.kb-row {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    width: 100%;
+}
+
+.kb-key {
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: 2.4rem;
+    height: 2.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface);
+    color: var(--text-primary);
+    font-family: "Nunito", sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    border: 1px solid var(--surface-border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.08s ease, background 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+    box-shadow: 0 1px 2px var(--shadow-color);
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+
+    &:hover:not(:disabled) {
+        background: var(--accent-soft-bg);
+        color: var(--accent-strong);
+    }
+
+    &:active:not(:disabled) {
+        transform: translateY(1px);
+        background: var(--accent-soft-bg-strong);
+        box-shadow: 0 0 0 var(--shadow-color);
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+}
+
+.kb-key--backspace {
+    flex: 1.7 1 0;
+    max-width: 4rem;
+    background: linear-gradient(135deg, var(--accent), var(--accent-light));
+    color: var(--accent-on);
+    border-color: transparent;
+
+    svg { width: 20px; height: 20px; }
+
+    &:hover:not(:disabled) {
+        background: linear-gradient(135deg, var(--accent-light), var(--accent-bright));
+        color: var(--accent-on);
+        filter: brightness(1.05);
+    }
+
+    &:active:not(:disabled) {
+        background: linear-gradient(135deg, var(--accent-strong), var(--accent));
+    }
+}
+
+/* Tablet */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .virtual-keyboard { padding: 0.45rem 0.2rem; gap: 5px; }
+    .kb-row { gap: 4px; }
+    .kb-key { height: 2.4rem; font-size: 0.9rem; max-width: 2.2rem; }
+    .kb-key--backspace { max-width: 3.6rem; svg { width: 18px; height: 18px; } }
+}
+
+/* Phone */
+@media (max-width: 767px) {
+    .virtual-keyboard { padding: 0.4rem 0.15rem; gap: 5px; border-radius: 10px; }
+    .kb-row { gap: 4px; }
+    .kb-key {
+        height: 2.6rem;
+        font-size: 0.95rem;
+        max-width: none;
+        border-radius: 6px;
+    }
+    .kb-key--backspace { flex: 1.8 1 0; svg { width: 18px; height: 18px; } }
+}
+
+/* Very narrow phones */
+@media (max-width: 359px) {
+    .virtual-keyboard { padding: 0.35rem 0.1rem; }
+    .kb-row { gap: 3px; }
+    .kb-key { height: 2.3rem; font-size: 0.85rem; }
+}
+
+/* Short viewport (landscape phone) — keep keyboard compact */
+@media (max-height: 600px) and (orientation: landscape) {
+    .virtual-keyboard { padding: 0.3rem 0.15rem; gap: 4px; margin-top: 0.35rem; }
+    .kb-key { height: 2rem; font-size: 0.82rem; }
+    .kb-key--backspace svg { width: 16px; height: 16px; }
+}
+
+/* Neon theme accent */
+:host-context(body[data-theme="neon"]) {
+    .kb-key--backspace {
+        box-shadow: 0 0 12px var(--accent-soft-bg-strong);
+    }
+}

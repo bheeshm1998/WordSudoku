@@ -246,13 +246,12 @@
     box-sizing: border-box;
     border: 1px solid var(--surface-border);
 
-    // The board side is the smaller of the parent's content width and the
-    // viewport-height budget left over after the surrounding rows. This keeps
-    // the board grid the same size whether 5x5/7x7/9x9 is selected (cells just
-    // scale via 1fr columns/rows) AND keeps the full game pinned inside the
-    // viewport on laptops, so no vertical scrollbar appears. Mobile overrides
-    // this to fill the screen width — see the mobile media query.
-    --board-side: min(100%, calc(100vh - 28rem));
+    // The board side prefers the viewport-height budget left over after the
+    // surrounding rows (header, controls, timer, undo/redo, virtual keyboard,
+    // feedback, restart) so the full game fits inside a tall viewport without
+    // scrolling. A floor of 280px keeps the board readable on short laptops —
+    // the page just scrolls a bit. The 100% cap keeps it inside the surface.
+    --board-side: max(280px, min(100%, calc(100vh - 38rem)));
     width: var(--board-side);
 
     .cell {
