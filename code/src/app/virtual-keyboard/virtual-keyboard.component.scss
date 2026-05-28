@@ -1,10 +1,10 @@
 .virtual-keyboard {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 5px;
     width: 100%;
-    margin-top: 0.5rem;
-    padding: 0.5rem 0.25rem;
+    margin-top: 0.4rem;
+    padding: 0.4rem 0.25rem;
     background: var(--surface-soft);
     border-radius: 12px;
     border: 1px solid var(--surface-border);
@@ -25,7 +25,7 @@
     flex: 1 1 0;
     min-width: 0;
     max-width: 2.4rem;
-    height: 2.6rem;
+    height: 2.3rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -95,11 +95,11 @@
 
 /* Phone */
 @media (max-width: 767px) {
-    .virtual-keyboard { padding: 0.4rem 0.15rem; gap: 5px; border-radius: 10px; }
+    .virtual-keyboard { padding: 0.35rem 0.15rem; gap: 4px; border-radius: 10px; margin-top: 0.35rem; }
     .kb-row { gap: 4px; }
     .kb-key {
-        height: 2.6rem;
-        font-size: 0.95rem;
+        height: 2.2rem;
+        font-size: 0.9rem;
         max-width: none;
         border-radius: 6px;
     }
