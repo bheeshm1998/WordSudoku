@@ -81,6 +81,15 @@
                 {{ diff }}
             </button>
         </div>
+        <div class="controls-divider"></div>
+        <button class="restart-icon-btn" (click)="onClickRestart()" title="New Game" aria-label="Start new game">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 4 23 10 17 10"></polyline>
+                <polyline points="1 20 1 14 7 14"></polyline>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"></path>
+                <path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14"></path>
+            </svg>
+        </button>
     </div>
 
     <div [ngClass]="'board'" [class.disable-user-action]="disableUserAction"
@@ -132,8 +141,8 @@
                 See meaning
             </button>
         </ng-container>
-        <ng-container *ngIf="solveStatus !== '' && failureReason === ''">
-            <p class="solve-status" [class.solve-status--success]="solveStatus === 'SUCCESS'">{{ solveStatus }}</p>
+        <ng-container *ngIf="solveStatus !== '' && solveStatus !== 'SUCCESS' && failureReason === ''">
+            <p class="solve-status">{{ solveStatus }}</p>
         </ng-container>
         <ng-container *ngIf="!assistModeEnabled && showStrictModeFeedback && allConflicts.length > 0">
             <span class="strict-mode-indicator">
@@ -142,19 +151,38 @@
         </ng-container>
     </div>
 
-    <button class="restart-btn" (click)="onClickRestart()" aria-label="Start new game">New Game</button>
-
-    <!-- Share button - only visible after puzzle is solved -->
-    <button *ngIf="solveStatus === 'SUCCESS'" class="share-btn" (click)="onClickShare()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="18" cy="5" r="3"></circle>
-            <circle cx="6" cy="12" r="3"></circle>
-            <circle cx="18" cy="19" r="3"></circle>
-            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-        </svg>
-        <span>Share</span>
-    </button>
+    <!-- Success modal - shown after puzzle is solved -->
+    <div *ngIf="showSuccessModal" class="success-overlay" (click)="onCloseSuccessModal()">
+        <div class="success-card" (click)="$event.stopPropagation()">
+            <button class="success-close-btn" (click)="onCloseSuccessModal()" aria-label="Close">&#10005;</button>
+            <h2 class="success-title">SUCCESS</h2>
+            <div class="success-time-block">
+                <span class="success-time-label">Solved in</span>
+                <span class="success-time-value">{{ timeTaken }}</span>
+            </div>
+            <div class="success-actions">
+                <button class="success-share-btn" (click)="onClickShare()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="18" cy="5" r="3"></circle>
+                        <circle cx="6" cy="12" r="3"></circle>
+                        <circle cx="18" cy="19" r="3"></circle>
+                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                    </svg>
+                    <span>Share</span>
+                </button>
+                <button class="success-restart-btn" (click)="onClickRestart()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="23 4 23 10 17 10"></polyline>
+                        <polyline points="1 20 1 14 7 14"></polyline>
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"></path>
+                        <path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14"></path>
+                    </svg>
+                    <span>New Game</span>
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- Copied toast notification -->
     <div *ngIf="showCopiedToast" class="copied-toast">Copied!</div>

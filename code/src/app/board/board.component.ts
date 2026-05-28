@@ -101,6 +101,9 @@ export class BoardComponent implements OnInit, OnDestroy {
   showCopiedToast: boolean = false;
   private toastTimeoutId: any;
 
+  // Success modal
+  showSuccessModal: boolean = false;
+
   // Keyboard navigation state
   focusedRow: number = -1;
   focusedCol: number = -1;
@@ -757,6 +760,14 @@ export class BoardComponent implements OnInit, OnDestroy {
     this.updateTheScoresData();
     this.recordSolveStats();
     this.triggerCompletionAnimation();
+    // Show the success modal after the completion animation has played
+    setTimeout(() => {
+      this.showSuccessModal = true;
+    }, BOARD_SIZE * 50 + 800);
+  }
+
+  onCloseSuccessModal(): void {
+    this.showSuccessModal = false;
   }
 
   private recordSolveStats(): void {
@@ -1034,6 +1045,7 @@ export class BoardComponent implements OnInit, OnDestroy {
     this.disableUserAction = false;
     this.timeTaken = START_TIME_TEXT;
     this.startTime = Date.now();
+    this.showSuccessModal = false;
     this.initializeTheBoard();
   }
 
