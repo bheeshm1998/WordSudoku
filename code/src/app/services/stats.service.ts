@@ -168,7 +168,12 @@ export class StatsService {
   }
 
   getTotalTimePlayed(): string {
-    return this.formatMsToTime(this.stats.totalTimePlayedMs);
+    const ms = this.stats.totalTimePlayedMs;
+    // Round up to the next whole minute (e.g., 25s -> 1min, 0s -> 0min)
+    const totalMinutes = ms > 0 ? Math.ceil(ms / 60000) : 0;
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    return `${hours}hrs ${minutes}min`;
   }
 
   getCurrentStreak(): number {

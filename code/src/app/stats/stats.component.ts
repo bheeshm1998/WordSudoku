@@ -13,6 +13,7 @@ export class StatsComponent implements OnInit {
   stats: StatsData | null = null;
   boardSizes = BOARD_SIZES;
   difficulties = DIFFICULTY_LEVELS;
+  showResetConfirm = false;
   
   difficultyLabels: Record<Difficulty, string> = {
     [Difficulty.Easy]: 'Easy',
@@ -61,10 +62,16 @@ export class StatsComponent implements OnInit {
   }
 
   onResetStats(): void {
-    const confirmed = confirm('Are you sure you want to reset all your statistics? This action cannot be undone.');
-    if (confirmed) {
-      this.statsService.resetStats();
-      this.loadStats();
-    }
+    this.showResetConfirm = true;
+  }
+
+  onCancelReset(): void {
+    this.showResetConfirm = false;
+  }
+
+  onConfirmReset(): void {
+    this.statsService.resetStats();
+    this.loadStats();
+    this.showResetConfirm = false;
   }
 }

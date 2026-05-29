@@ -41,29 +41,49 @@
         </div>
       </div>
 
-      <!-- Detailed Stats by Size and Difficulty -->
-      <div class="stats-section" *ngFor="let size of boardSizes">
-        <h3>{{ size }}×{{ size }}</h3>
-        <div class="difficulty-stats">
-          <div class="difficulty-row" *ngFor="let difficulty of difficulties">
-            <div class="difficulty-label">{{ difficultyLabels[difficulty] }}</div>
-            <div class="difficulty-stats-grid">
-              <div class="stat-card small">
-                <span class="stat-label">Best</span>
-                <span class="stat-value">{{ getBestTime(size, difficulty) }}</span>
-              </div>
-              <div class="stat-card small">
-                <span class="stat-label">Average</span>
-                <span class="stat-value">{{ getAverageTime(size, difficulty) }}</span>
-              </div>
-            </div>
-          </div>
+      <!-- Best Times Table -->
+      <div class="stats-section">
+        <h3>Your Best Scores</h3>
+        <div class="best-times-table-wrap">
+          <table class="best-times-table">
+            <thead>
+              <tr>
+                <th class="corner-cell"></th>
+                <th *ngFor="let difficulty of difficulties">{{ difficultyLabels[difficulty] }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let size of boardSizes">
+                <th class="row-label">{{ size }}×{{ size }}</th>
+                <td *ngFor="let difficulty of difficulties">{{ getBestTime(size, difficulty) }}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
       <!-- Reset Button -->
       <div class="stats-section reset-section">
         <button class="reset-btn" (click)="onResetStats()">Reset Statistics</button>
+      </div>
+    </div>
+
+    <!-- Custom Reset Confirmation Dialog -->
+    <div class="confirm-overlay" *ngIf="showResetConfirm" (click)="onCancelReset()">
+      <div class="confirm-dialog" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="resetConfirmTitle">
+        <div class="confirm-icon" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+        </div>
+        <h3 id="resetConfirmTitle" class="confirm-title">Reset Statistics?</h3>
+        <p class="confirm-message">This will permanently erase all your puzzle records, best times and streak. This action cannot be undone.</p>
+        <div class="confirm-actions">
+          <button type="button" class="confirm-btn confirm-btn--cancel" (click)="onCancelReset()">Cancel</button>
+          <button type="button" class="confirm-btn confirm-btn--danger" (click)="onConfirmReset()">Reset</button>
+        </div>
       </div>
     </div>
   </div>
