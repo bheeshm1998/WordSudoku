@@ -779,15 +779,15 @@ export class BoardComponent implements OnInit, OnDestroy {
   }
 
   checkIfRecordBroke(lastBest: string, current: string): boolean{
-    let oldTime = lastBest.split(":");
-    const currentTime = current.split(":");
-    const oldTimeInMillis: number = Number(oldTime[0]) * 60 * 1000 + Number(oldTime[1].split(".")[0]) * 1000 + Number(oldTime[1].split(".")[1]);
-    const currentTimeInMillis: number = Number(currentTime[0]) * 60 * 1000 + Number(currentTime[1].split(".")[0]) * 1000 + Number(currentTime[1].split(".")[1]);
-    if(currentTimeInMillis < oldTimeInMillis){
-      return true;
-    } else{
-      return false;
-    }
+    return this.timeStringToMillis(current) < this.timeStringToMillis(lastBest);
+  }
+
+  // Accepts both "MM:SS" (current format) and the legacy "MM:SS.t" stored
+  // in localStorage from previous versions.
+  private timeStringToMillis(str: string): number {
+    const [m, rest] = str.split(":");
+    const [s, t] = (rest ?? "0").split(".");
+    return Number(m) * 60 * 1000 + Number(s) * 1000 + (t ? Number(t) * 100 : 0);
   }
 
   checkIfTheBoardIsSolved(board: Cell[][]): boolean {
@@ -1127,20 +1127,24 @@ export class BoardComponent implements OnInit, OnDestroy {
   }
 
   updateTime(){
-    this.intervalId = setInterval (() =>   {    
-      const millisElapsed = Date.now() - this.startTime;
-      const secondsElapsed = millisElapsed / 1000;
-      const minutesElapsed = secondsElapsed / 60;
-  
-      const millisText = String(millisElapsed).slice(-3)[0];
-      const secondsText = this.formatNumber(Math.floor(secondsElapsed) % 60, 2);
-      const minutesText = this.formatNumber(Math.floor(minutesElapsed),2);
-      if(Number(minutesText) >= 60){
-        clearInterval(this.intervalId);
-      }
-  
-      this.timeTaken = `${minutesText}:${secondsText}.${millisText}`;
-    }, 100 )
+    this.intervalId = setInterval (() =>   {
+      this.tickTimer();
+    }, 500)
+  }
+
+  private tickTimer(): void {
+    const millisElapsed = Date.now() - this.startTime;
+    // Cap timer at 60:00 - stop the interval and clamp the display.
+    if (millisElapsed >= 60 * 60 * 1000) {
+      this.timeTaken = "60:00";
+      clearInterval(this.intervalId);
+      return;
+    }
+    const secondsElapsed = millisElapsed / 1000;
+    const minutesElapsed = secondsElapsed / 60;
+    const secondsText = this.formatNumber(Math.floor(secondsElapsed) % 60, 2);
+    const minutesText = this.formatNumber(Math.floor(minutesElapsed), 2);
+    this.timeTaken = `${minutesText}:${secondsText}`;
   }
 
   private generateGameId(): string {
@@ -1199,19 +1203,8 @@ export class BoardComponent implements OnInit, OnDestroy {
 
   private startTimerInterval(): void {
     this.intervalId = setInterval(() => {
-      const millisElapsed = Date.now() - this.startTime;
-      const secondsElapsed = millisElapsed / 1000;
-      const minutesElapsed = secondsElapsed / 60;
-  
-      const millisText = String(millisElapsed).slice(-3)[0];
-      const secondsText = this.formatNumber(Math.floor(secondsElapsed) % 60, 2);
-      const minutesText = this.formatNumber(Math.floor(minutesElapsed), 2);
-      if (Number(minutesText) >= 60) {
-        clearInterval(this.intervalId);
-      }
-  
-      this.timeTaken = `${minutesText}:${secondsText}.${millisText}`;
-    }, 100);
+      this.tickTimer();
+    }, 500);
   }
 
   // Keyboard shortcuts for undo/redo and cell navigation

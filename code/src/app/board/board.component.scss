@@ -163,8 +163,11 @@
 .game-rules {
     font-family: "Nunito", sans-serif;
     font-size: 0.72rem;
-    font-weight: 400;
-    color: var(--text-secondary);
+    font-weight: 500;
+    // Use the theme's primary text color so the rule reads with adequate
+    // contrast on every palette (forest, ocean, neon, midnight).
+    color: var(--text-primary);
+    opacity: 0.85;
     line-height: 1.5;
     margin: 0;
     padding: 0;

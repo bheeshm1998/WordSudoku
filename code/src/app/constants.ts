@@ -261,5 +261,5 @@ export const FAILURE_INFO = {
     WORD_EXISTS: "wordExists"
 }
 
-export const START_TIME_TEXT = "00:00.0";
+export const START_TIME_TEXT = "00:00";
 export const BEST_SCORE_DEFAULT_STRING = "-";
