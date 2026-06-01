@@ -2,7 +2,7 @@
 
     <div class="game-header">
         <div class="header-top">
-            <h1 class="game-title">word sudoku</h1>
+            <h1 class="game-title">Word Sudoku</h1>
             <div class="header-timer">
                 <div class="timer-block">
                     <span class="timer-label">BEST</span>
@@ -110,6 +110,21 @@
                 </div>
             </ng-container>
         </ng-container>
+
+        <!-- Assist-mode directional cue: animated box sweeping along a found word -->
+        <div *ngIf="wordBox"
+             class="word-box"
+             [class.word-box--horizontal]="wordBox.horizontal"
+             [class.word-box--vertical]="!wordBox.horizontal"
+             [ngStyle]="{
+               'left.px': wordBox.left,
+               'top.px': wordBox.top,
+               'width.px': wordBox.width,
+               'height.px': wordBox.height,
+               'transform-origin': wordBox.origin
+             }"
+             aria-hidden="true">
+        </div>
 
         <!-- Confetti overlay -->
         <div class="confetti-container" *ngIf="confettiParticles.length > 0">

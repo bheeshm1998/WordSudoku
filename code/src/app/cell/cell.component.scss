@@ -132,6 +132,30 @@
     color: var(--cell-locked-text);
 }
 
+// Lock badge in the top-right corner of locked (pre-filled) cells. Makes it
+// obvious a cell can't be edited during a conflict. White so it reads on the
+// dark locked-cell gradient across every theme.
+.lock-icon {
+    position: absolute;
+    top: 6%;
+    right: 6%;
+    width: 26%;
+    max-width: 14px;
+    min-width: 8px;
+    aspect-ratio: 1;
+    pointer-events: none;
+    z-index: 3;
+    line-height: 0;
+    opacity: 0.92;
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
+
+    svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+    }
+}
+
 // Row/column highlight
 .cell-row-highlight {
     &:not(.cell-locked):not(.cell-conflict) {

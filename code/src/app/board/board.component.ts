@@ -82,6 +82,19 @@ export class BoardComponent implements OnInit, OnDestroy {
   selectedRow: number = -1;
   selectedCol: number = -1;
 
+  // Assist-mode directional cue: an animated rectangle that sweeps along a
+  // found word from its first letter to its last, then fades out. Only one is
+  // shown at a time (matching the single-conflict display).
+  wordBox: {
+    left: number; top: number; width: number; height: number;
+    horizontal: boolean; origin: string;
+  } | null = null;
+  private wordBoxTimeout: any;
+  private pendingWordBox: {
+    startR: number; startC: number; endR: number; endC: number;
+    direction: 'LTR' | 'RTL' | 'TTB' | 'BTT';
+  } | null = null;
+
   // Undo/Redo state
   canUndo: boolean = false;
   canRedo: boolean = false;
@@ -191,6 +204,7 @@ export class BoardComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.persistGameState();
     this.clearTimer();
+    this.clearWordBox();
     if (this.settingsSubscription) {
       this.settingsSubscription.unsubscribe();
     }
@@ -602,7 +616,8 @@ export class BoardComponent implements OnInit, OnDestroy {
     this.showCompletionAnimation = false;
     this.completionAnimationPlayed = false;
     this.confettiParticles = [];
-    
+    this.clearWordBox();
+
     // Clear history when starting a new game
     this.historyService.clear();
     this.canUndo = false;
@@ -731,6 +746,7 @@ export class BoardComponent implements OnInit, OnDestroy {
   }
 
   private clearAllConflictHighlights(): void {
+    this.clearWordBox();
     for (let i = 0; i < BOARD_SIZE; i++) {
       for (let j = 0; j < BOARD_SIZE; j++) {
         this.board[i][j].hasConflict = false;
@@ -829,12 +845,12 @@ export class BoardComponent implements OnInit, OnDestroy {
           let validationStatus = this.validateWord(word);
           if (validationStatus.wordAlreadyExists) {
             if (validationStatus.doesReverseExist) {
-              this.failureDetail = this.reverseWord(word.toUpperCase()) + " is a meaningful word";
+              this.failureDetail = this.reverseWord(word.toUpperCase()) + " is a valid word";
               this.failureReason = FAILURE_INFO.WORD_EXISTS;
               this.foundWord = this.reverseWord(word.toUpperCase());
               this.colorExistingWord(this.board, row, j, row, i);
             } else {
-              this.failureDetail = word + " is a meaningful word";
+              this.failureDetail = word + " is a valid word";
               this.failureReason = FAILURE_INFO.WORD_EXISTS;
               this.foundWord = word;
               this.colorExistingWord(this.board, row, i, row, j);
@@ -852,12 +868,12 @@ export class BoardComponent implements OnInit, OnDestroy {
           let validationStatus = this.validateWord(word);
           if (validationStatus.wordAlreadyExists) {
             if (validationStatus.doesReverseExist) {
-              this.failureDetail = this.reverseWord(word.toUpperCase()) + " is a meaningful word";
+              this.failureDetail = this.reverseWord(word.toUpperCase()) + " is a valid word";
               this.failureReason = FAILURE_INFO.WORD_EXISTS;
               this.foundWord = this.reverseWord(word.toUpperCase());
               this.colorExistingWord(this.board, j, col, i, col);
             } else {
-              this.failureDetail = word + " is a meaningful word";
+              this.failureDetail = word + " is a valid word";
               this.failureReason = FAILURE_INFO.WORD_EXISTS;
               this.foundWord = word;
               this.colorExistingWord(this.board, i, col, j, col);
@@ -899,11 +915,15 @@ export class BoardComponent implements OnInit, OnDestroy {
           let colorKey = `leftToRight_${i - startCol}`;
           board[startRow][i].background = GRADIENT[colorKey];
         }
+        // First letter at startCol, last at endCol-1, read left-to-right.
+        this.triggerWordBox(startRow, startCol, startRow, endCol - 1, 'LTR');
       } else {
         for (let i = startCol - 1; i >= endCol; i--) {
           let colorKey = `rightToLeft_${startCol - i - 1}`;
           board[startRow][i].background = GRADIENT[colorKey];
         }
+        // First letter at startCol-1, last at endCol, read right-to-left.
+        this.triggerWordBox(startRow, startCol - 1, startRow, endCol, 'RTL');
       }
     } else if (startCol == endCol) {
       if (startRow < endRow) {
@@ -911,12 +931,88 @@ export class BoardComponent implements OnInit, OnDestroy {
           let colorKey = `topToBottom_${i - startRow}`;
           board[i][startCol].background = GRADIENT[colorKey];
         }
+        // First letter at startRow, last at endRow-1, read top-to-bottom.
+        this.triggerWordBox(startRow, startCol, endRow - 1, startCol, 'TTB');
       } else {
         for (let i = startRow - 1; i >= endRow; i--) {
           let colorKey = `bottomToTop_${startRow - i - 1}`;
           board[i][startCol].background = GRADIENT[colorKey];
         }
+        // First letter at startRow-1, last at endRow, read bottom-to-top.
+        this.triggerWordBox(startRow - 1, startCol, endRow, startCol, 'BTT');
       }
+    }
+  }
+
+  /**
+   * Queues the assist-mode directional box for a found word. The box is laid
+   * out from the live cell geometry on the next tick (after the DOM reflects
+   * the current board) and removed once its sweep-and-fade animation ends.
+   */
+  private triggerWordBox(
+    startR: number, startC: number, endR: number, endC: number,
+    direction: 'LTR' | 'RTL' | 'TTB' | 'BTT'
+  ): void {
+    if (!this.assistModeEnabled) return;
+
+    this.pendingWordBox = { startR, startC, endR, endC, direction };
+    // Drop any existing box first so the *ngIf recreates the element and the
+    // CSS animation restarts for the new word.
+    this.wordBox = null;
+    if (this.wordBoxTimeout) {
+      clearTimeout(this.wordBoxTimeout);
+    }
+    setTimeout(() => this.layoutWordBox(), 0);
+  }
+
+  private layoutWordBox(): void {
+    const p = this.pendingWordBox;
+    if (!p) return;
+
+    const boardEl = document.querySelector('.board') as HTMLElement | null;
+    if (!boardEl) return;
+
+    const minR = Math.min(p.startR, p.endR);
+    const maxR = Math.max(p.startR, p.endR);
+    const minC = Math.min(p.startC, p.endC);
+    const maxC = Math.max(p.startC, p.endC);
+
+    const tl = boardEl.querySelector(`[data-row="${minR}"][data-col="${minC}"]`) as HTMLElement | null;
+    const br = boardEl.querySelector(`[data-row="${maxR}"][data-col="${maxC}"]`) as HTMLElement | null;
+    if (!tl || !br) return;
+
+    const boardRect = boardEl.getBoundingClientRect();
+    const tlRect = tl.getBoundingClientRect();
+    const brRect = br.getBoundingClientRect();
+
+    const horizontal = p.direction === 'LTR' || p.direction === 'RTL';
+    const origin =
+      p.direction === 'LTR' ? 'left center' :
+      p.direction === 'RTL' ? 'right center' :
+      p.direction === 'TTB' ? 'center top' :
+      'center bottom';
+
+    this.wordBox = {
+      left: tlRect.left - boardRect.left,
+      top: tlRect.top - boardRect.top,
+      width: brRect.right - tlRect.left,
+      height: brRect.bottom - tlRect.top,
+      horizontal,
+      origin
+    };
+
+    // Remove the box after its sweep-and-fade animation completes.
+    this.wordBoxTimeout = setTimeout(() => {
+      this.wordBox = null;
+    }, 1400);
+  }
+
+  private clearWordBox(): void {
+    this.pendingWordBox = null;
+    this.wordBox = null;
+    if (this.wordBoxTimeout) {
+      clearTimeout(this.wordBoxTimeout);
+      this.wordBoxTimeout = null;
     }
   }
 
