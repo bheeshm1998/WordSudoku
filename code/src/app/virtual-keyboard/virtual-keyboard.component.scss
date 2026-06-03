@@ -58,6 +58,13 @@
         box-shadow: 0 0 0 var(--shadow-color);
     }
 
+    &.kb-key--pressed:not(:disabled) {
+        animation: keyPressCue 160ms ease-out;
+        background: var(--accent-soft-bg-strong);
+        color: var(--accent-strong);
+        box-shadow: 0 0 0 2px var(--accent-soft-bg-strong), 0 1px 2px var(--shadow-color);
+    }
+
     &:focus-visible {
         outline: 2px solid var(--accent);
         outline-offset: 2px;
@@ -86,6 +93,33 @@
 
     &:active:not(:disabled) {
         background: linear-gradient(135deg, var(--accent-strong), var(--accent));
+    }
+
+    &.kb-key--pressed:not(:disabled) {
+        color: var(--accent-on);
+        background: linear-gradient(135deg, var(--accent-strong), var(--accent));
+        box-shadow: 0 0 0 2px var(--accent-soft-bg-strong), 0 1px 2px var(--shadow-color);
+    }
+}
+
+@keyframes keyPressCue {
+    0% {
+        transform: translateY(0) scale(1);
+        filter: brightness(1);
+    }
+    35% {
+        transform: translateY(1px) scale(0.94);
+        filter: brightness(1.08);
+    }
+    100% {
+        transform: translateY(0) scale(1);
+        filter: brightness(1);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .kb-key.kb-key--pressed:not(:disabled) {
+        animation: none;
     }
 }
 
