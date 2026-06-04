@@ -1,8 +1,8 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { BEST_SCORE_DEFAULT_STRING, BOARD_SIZE, BOARD_SIZES, CELL_COLOR, DIFFICULTY, DIFFICULTY_LEVELS, DIFFICULTY_PREFILLED_CONFIG, FAILURE_INFO, getLetterSetForDifficulty, GRADIENT, INITIALIZING_WORD, NUM_OF_PREFILLED_CELLS, START_TIME_TEXT, updateBoardConfig, WORDS_FILE_PATH } from '../constants';
+import { BEST_SCORE_DEFAULT_STRING, BOARD_SIZES, BoardSize, CELL_COLOR, DIFFICULTY_LEVELS, FAILURE_INFO, getLetterSetForDifficulty, getPlayerPoolLetters, GRADIENT, INITIALIZING_WORD, NUM_OF_PREFILLED_CELLS, START_TIME_TEXT, updateBoardConfig, WORDS_FILE_PATH, getCurrentNumPrefilledCells } from '../constants';
 import { Cell, WordMeaning, WordValidation } from '../model';
-import { Difficulty } from '../constants';
+import { Difficulty, BOARD_SIZES as CONFIG_BOARD_SIZES, DIFFICULTY_LEVELS as CONFIG_DIFFICULTIES, getCurrentBoardSize, getCurrentDifficulty } from '../constants';
 import { FileServiceService } from '../services/file-service.service';
 import { DictionaryService } from '../services/dictionary.service';
 import { ConflictDetectionService, Conflict } from '../services/conflict-detection.service';
@@ -42,7 +42,7 @@ export class BoardComponent implements OnInit, OnDestroy {
   failureDetail: string = "";
   failureReason: string = "";
 
-  gridSize: string = `repeat(${BOARD_SIZE}, 1fr)`;
+  gridSize: string = '';
 
   solveStatus: string = "";
 
@@ -58,10 +58,10 @@ export class BoardComponent implements OnInit, OnDestroy {
   showNewBestIndicator: boolean = false;
 
   availableBoardSizes = BOARD_SIZES;
-  selectedBoardSize: number = BOARD_SIZE;
+  selectedBoardSize: BoardSize = 5;
   
-  availableDifficulties = DIFFICULTY_LEVELS;
-  selectedDifficulty: Difficulty = DIFFICULTY;
+  availableDifficulties: Difficulty[] = [];
+  selectedDifficulty: Difficulty | null = null;
 
   private currentGameId: string | null = null;
 
@@ -120,7 +120,7 @@ export class BoardComponent implements OnInit, OnDestroy {
   // Keyboard navigation state
   focusedRow: number = -1;
   focusedCol: number = -1;
-  private validLetters: Set<string> = new Set();
+  validLetters: Set<string> = new Set();
 
   constructor(
     private fileService: FileServiceService, 
@@ -142,7 +142,7 @@ export class BoardComponent implements OnInit, OnDestroy {
     if (persistedState && !this.shouldStartNewGame(persistedState)) {
       this.selectedBoardSize = persistedState.boardSize;
       this.selectedDifficulty = persistedState.difficulty || Difficulty.Medium;
-      updateBoardConfig(persistedState.boardSize, this.selectedDifficulty);
+      this.initializeGameState();
       this.restoreGameState(persistedState);
     } else {
       this.initializeTheBoard();
@@ -279,17 +279,17 @@ export class BoardComponent implements OnInit, OnDestroy {
     // Phase 2: After pulse wave, shift to brighter green
     setTimeout(() => {
       this.setCellsToSuccessColor();
-    }, BOARD_SIZE * 50 + 300); // Wait for wave to complete plus a bit
+    }, this.selectedBoardSize * 50 + 300); // Wait for wave to complete plus a bit
     
     // Phase 3: Confetti burst from center
     setTimeout(() => {
       this.triggerConfettiBurst();
-    }, BOARD_SIZE * 50 + 300);
+    }, this.selectedBoardSize * 50 + 300);
     
     // Phase 4: Timer highlight animation
     setTimeout(() => {
       // Timer highlight is handled via CSS class in template
-    }, BOARD_SIZE * 50 + 400);
+    }, this.selectedBoardSize * 50 + 400);
     
     // Phase 5: Play success sound
     setTimeout(() => {
@@ -300,8 +300,8 @@ export class BoardComponent implements OnInit, OnDestroy {
   private animateCellPulseWave(): void {
     const cellElements = document.querySelectorAll('.board .cell');
     cellElements.forEach((cell, index) => {
-      const row = Math.floor(index / BOARD_SIZE);
-      const col = index % BOARD_SIZE;
+      const row = Math.floor(index / this.selectedBoardSize);
+      const col = index % this.selectedBoardSize;
       const delay = (row + col) * 30; // Diagonal wave timing
       
       setTimeout(() => {
@@ -314,8 +314,8 @@ export class BoardComponent implements OnInit, OnDestroy {
   }
   
   private setCellsToSuccessColor(): void {
-    for (let i = 0; i < BOARD_SIZE; i++) {
-      for (let j = 0; j < BOARD_SIZE; j++) {
+    for (let i = 0; i < this.selectedBoardSize; i++) {
+      for (let j = 0; j < this.selectedBoardSize; j++) {
         if (!this.board[i][j].isLocked) {
           this.board[i][j].background = '#52b488'; // Brighter green for success
         }
@@ -396,36 +396,55 @@ export class BoardComponent implements OnInit, OnDestroy {
     if (savedDifficulty && Object.values(Difficulty).includes(savedDifficulty as Difficulty)) {
       this.selectedDifficulty = savedDifficulty as Difficulty;
     }
+    const savedBoardSize = localStorage.getItem('wordSudoku_boardSize');
+    if (savedBoardSize && (savedBoardSize === '5' || savedBoardSize === '9')) {
+      this.selectedBoardSize = parseInt(savedBoardSize, 10) as BoardSize;
+    }
   }
 
   private persistSettings(): void {
-    localStorage.setItem('wordSudoku_difficulty', this.selectedDifficulty);
+    if (this.selectedDifficulty) {
+      localStorage.setItem('wordSudoku_difficulty', this.selectedDifficulty);
+    } else {
+      localStorage.removeItem('wordSudoku_difficulty');
+    }
+    localStorage.setItem('wordSudoku_boardSize', String(this.selectedBoardSize));
   }
 
   onDifficultyChange(difficulty: Difficulty) {
     if (difficulty === this.selectedDifficulty) return;
-    
+
     if (this.currentGameId) {
       localStorage.removeItem(`gameState_${this.currentGameId}`);
     }
-    
+
     this.selectedDifficulty = difficulty;
     this.persistSettings();
-    updateBoardConfig(this.selectedBoardSize, this.selectedDifficulty);
+    this.initializeGameState();
     this.clearTimer();
     this.updateBestScoreForCurrentConfig();
     this.initializeTheBoard();
   }
 
-  onBoardSizeChange(newSize: number) {
+  onBoardSizeChange(newSize: BoardSize) {
     if (newSize === this.selectedBoardSize) return;
-    
+
     if (this.currentGameId) {
       localStorage.removeItem(`gameState_${this.currentGameId}`);
     }
-    
+
     this.selectedBoardSize = newSize;
-    updateBoardConfig(newSize, this.selectedDifficulty);
+    if (newSize === 5) {
+      this.selectedDifficulty = null;
+      this.availableDifficulties = [];
+    } else {
+      this.availableDifficulties = DIFFICULTY_LEVELS;
+      if (!this.selectedDifficulty) {
+        this.selectedDifficulty = Difficulty.Easy;
+      }
+    }
+    this.persistSettings();
+    this.initializeGameState();
     this.clearTimer();
     this.updateBestScoreForCurrentConfig();
     this.initializeTheBoard();
@@ -435,6 +454,11 @@ export class BoardComponent implements OnInit, OnDestroy {
     if (this.intervalId) {
       clearInterval(this.intervalId);
     }
+  }
+
+  private initializeGameState(): void {
+    updateBoardConfig(this.selectedBoardSize, this.selectedDifficulty);
+    this.availableDifficulties = this.selectedBoardSize === 9 ? DIFFICULTY_LEVELS : [];
   }
 
   loadWordsFile() {
@@ -454,15 +478,15 @@ export class BoardComponent implements OnInit, OnDestroy {
     this.focusedCol = col;
 
     // Clear previous row/col highlights first
-    for (let i = 0; i < BOARD_SIZE; i++) {
-      for (let j = 0; j < BOARD_SIZE; j++) {
+    for (let i = 0; i < this.selectedBoardSize; i++) {
+      for (let j = 0; j < this.selectedBoardSize; j++) {
         this.board[i][j].isInSelectedRow = false;
         this.board[i][j].isInSelectedCol = false;
       }
     }
 
-    for (let i = 0; i < BOARD_SIZE; i++) {
-      for (let j = 0; j < BOARD_SIZE; j++) {
+    for (let i = 0; i < this.selectedBoardSize; i++) {
+      for (let j = 0; j < this.selectedBoardSize; j++) {
         if (!this.board[i][j].isLocked) {
           if (row == i && col == j) {
             this.board[i][j].isActive = !this.board[i][j].isActive;
@@ -496,7 +520,7 @@ export class BoardComponent implements OnInit, OnDestroy {
   }
 
   moveFocusToCell(row: number, col: number): void {
-    if (row < 0 || row >= BOARD_SIZE || col < 0 || col >= BOARD_SIZE) {
+    if (row < 0 || row >= this.selectedBoardSize || col < 0 || col >= this.selectedBoardSize) {
       return;
     }
     this.onCellClick(row, col);
@@ -517,8 +541,8 @@ export class BoardComponent implements OnInit, OnDestroy {
   private moveFocus(direction: 'up' | 'down' | 'left' | 'right'): void {
     if (this.focusedRow < 0 || this.focusedCol < 0) {
       // Initialize to first non-locked cell if no focus
-      for (let i = 0; i < BOARD_SIZE; i++) {
-        for (let j = 0; j < BOARD_SIZE; j++) {
+      for (let i = 0; i < this.selectedBoardSize; i++) {
+        for (let j = 0; j < this.selectedBoardSize; j++) {
           if (!this.board[i][j].isLocked) {
             this.moveFocusToCell(i, j);
             return;
@@ -547,10 +571,10 @@ export class BoardComponent implements OnInit, OnDestroy {
     }
 
     // Wrap around logic
-    if (newRow < 0) newRow = BOARD_SIZE - 1;
-    if (newRow >= BOARD_SIZE) newRow = 0;
-    if (newCol < 0) newCol = BOARD_SIZE - 1;
-    if (newCol >= BOARD_SIZE) newCol = 0;
+    if (newRow < 0) newRow = this.selectedBoardSize - 1;
+    if (newRow >= this.selectedBoardSize) newRow = 0;
+    if (newCol < 0) newCol = this.selectedBoardSize - 1;
+    if (newCol >= this.selectedBoardSize) newCol = 0;
 
     this.moveFocusToCell(newRow, newCol);
   }
@@ -578,16 +602,16 @@ export class BoardComponent implements OnInit, OnDestroy {
   }
 
   private findFirstEditableCell(): { row: number, col: number } | null {
-    for (let i = 0; i < BOARD_SIZE; i++) {
-      for (let j = 0; j < BOARD_SIZE; j++) {
+    for (let i = 0; i < this.selectedBoardSize; i++) {
+      for (let j = 0; j < this.selectedBoardSize; j++) {
         if (!this.board[i][j].isLocked && this.board[i][j].letter === '') {
           return { row: i, col: j };
         }
       }
     }
     // Fall back to first non-locked cell (board may be fully filled)
-    for (let i = 0; i < BOARD_SIZE; i++) {
-      for (let j = 0; j < BOARD_SIZE; j++) {
+    for (let i = 0; i < this.selectedBoardSize; i++) {
+      for (let j = 0; j < this.selectedBoardSize; j++) {
         if (!this.board[i][j].isLocked) return { row: i, col: j };
       }
     }
@@ -602,8 +626,9 @@ export class BoardComponent implements OnInit, OnDestroy {
     this.clearFocusedCell();
   }
 
-  initializeTheBoard() {
-    this.gridSize = `repeat(${BOARD_SIZE}, 1fr)`;
+initializeTheBoard() {
+    this.initializeGameState();
+    this.gridSize = `repeat(${this.selectedBoardSize}, 1fr)`;
     this.board = [];
     this.failureDetail = "";
     this.failureReason = "";
@@ -618,26 +643,22 @@ export class BoardComponent implements OnInit, OnDestroy {
     this.confettiParticles = [];
     this.clearWordBox();
 
-    // Clear history when starting a new game
     this.historyService.clear();
     this.canUndo = false;
     this.canRedo = false;
-    
-    // Reset keyboard navigation state
+
     this.focusedRow = -1;
     this.focusedCol = -1;
-    
-    // Set up valid letters for keyboard navigation
-    this.validLetters = new Set(getLetterSetForDifficulty(this.selectedDifficulty).split(''));
-    
-    for (let i = 0; i < BOARD_SIZE; i++) {
+
+    this.validLetters = getPlayerPoolLetters();
+
+    for (let i = 0; i < this.selectedBoardSize; i++) {
       this.board.push([]);
-      for (let j = 0; j < BOARD_SIZE; j++) {
+      for (let j = 0; j < this.selectedBoardSize; j++) {
         this.board[i].push({ row: i, col: j, letter: "", isActive: false, isLocked: false, background: CELL_COLOR.INACTIVE_CELL, hasConflict: false, isInSelectedRow: false, isInSelectedCol: false });
       }
     }
-    
-    // Get letter set based on difficulty
+
     const letterSet = getLetterSetForDifficulty(this.selectedDifficulty);
     this.fillTheBoardWithAWord(this.shuffleString(letterSet));
     this.startTime = Date.now();
@@ -676,7 +697,7 @@ export class BoardComponent implements OnInit, OnDestroy {
       this.updateConflictHighlights();
     } else if (this.showStrictModeFeedback) {
       // Strict Mode: check if current conflict was fixed, advance to next
-      const result = this.conflictDetectionService.detectAllConflicts(this.board);
+      const result = this.conflictDetectionService.detectAllConflicts(this.board, this.selectedBoardSize);
       this.allConflicts = result.conflicts;
       
       if (this.allConflicts.length > 0) {
@@ -711,7 +732,7 @@ export class BoardComponent implements OnInit, OnDestroy {
   }
 
   private startStrictModeFeedback(): void {
-    const result = this.conflictDetectionService.detectAllConflicts(this.board);
+    const result = this.conflictDetectionService.detectAllConflicts(this.board, this.selectedBoardSize);
     this.allConflicts = result.conflicts;
     
     if (this.allConflicts.length > 0) {
@@ -747,8 +768,8 @@ export class BoardComponent implements OnInit, OnDestroy {
 
   private clearAllConflictHighlights(): void {
     this.clearWordBox();
-    for (let i = 0; i < BOARD_SIZE; i++) {
-      for (let j = 0; j < BOARD_SIZE; j++) {
+    for (let i = 0; i < this.selectedBoardSize; i++) {
+      for (let j = 0; j < this.selectedBoardSize; j++) {
         this.board[i][j].hasConflict = false;
       }
     }
@@ -760,11 +781,11 @@ export class BoardComponent implements OnInit, OnDestroy {
     // checkIfTheBoardIsSolved below).
     const boardFull = this.checkIfTheBoardIsFullyFilled(this.board);
     const conflictCells = boardFull
-      ? this.conflictDetectionService.getConflictCells(this.board)
-      : this.conflictDetectionService.getDuplicateConflictCells(this.board);
+      ? this.conflictDetectionService.getConflictCells(this.board, this.selectedBoardSize)
+      : this.conflictDetectionService.getDuplicateConflictCells(this.board, this.selectedBoardSize);
 
-    for (let i = 0; i < BOARD_SIZE; i++) {
-      for (let j = 0; j < BOARD_SIZE; j++) {
+    for (let i = 0; i < this.selectedBoardSize; i++) {
+      for (let j = 0; j < this.selectedBoardSize; j++) {
         this.board[i][j].hasConflict = conflictCells.has(`${i},${j}`);
       }
     }
@@ -779,7 +800,7 @@ export class BoardComponent implements OnInit, OnDestroy {
     // Show the success modal after the completion animation has played
     setTimeout(() => {
       this.showSuccessModal = true;
-    }, BOARD_SIZE * 50 + 800);
+    }, this.selectedBoardSize * 50 + 800);
   }
 
   onCloseSuccessModal(): void {
@@ -808,9 +829,9 @@ export class BoardComponent implements OnInit, OnDestroy {
 
   checkIfTheBoardIsSolved(board: Cell[][]): boolean {
     // checking if the rows contain any duplicates
-    for (let row = 0; row < BOARD_SIZE; row++) {
-      for (let i = 0; i <= BOARD_SIZE - 3; i++) {
-        for (let j = i + 3; j <= BOARD_SIZE; j++) {
+    for (let row = 0; row < this.selectedBoardSize; row++) {
+      for (let i = 0; i <= this.selectedBoardSize - 3; i++) {
+        for (let j = i + 3; j <= this.selectedBoardSize; j++) {
           let word: string = this.constructWordFromIndices(this.board, row, i, row, j);
           let validationStatus = this.validateWord(word)
           if (validationStatus.hasDuplicates) {
@@ -823,9 +844,9 @@ export class BoardComponent implements OnInit, OnDestroy {
       }
     }
 // checking if the columns contain any duplicates
-    for (let col = 0; col < BOARD_SIZE; col++) {
-      for (let i = 0; i <= BOARD_SIZE - 3; i++) {
-        for (let j = i + 3; j <= BOARD_SIZE; j++) {
+    for (let col = 0; col < this.selectedBoardSize; col++) {
+      for (let i = 0; i <= this.selectedBoardSize - 3; i++) {
+        for (let j = i + 3; j <= this.selectedBoardSize; j++) {
           let word: string = this.constructWordFromIndices(this.board, i, col, j, col);
           let validationStatus = this.validateWord(word)
           if (validationStatus.hasDuplicates) {
@@ -838,9 +859,9 @@ export class BoardComponent implements OnInit, OnDestroy {
       }
     }
 // checking if the rows contain any valid word
-    for (let row = 0; row < BOARD_SIZE; row++) {
-      for (let i = 0; i <= BOARD_SIZE - 3; i++) {
-        for (let j = i + 3; j <= BOARD_SIZE; j++) {
+    for (let row = 0; row < this.selectedBoardSize; row++) {
+      for (let i = 0; i <= this.selectedBoardSize - 3; i++) {
+        for (let j = i + 3; j <= this.selectedBoardSize; j++) {
           let word: string = this.constructWordFromIndices(this.board, row, i, row, j);
           let validationStatus = this.validateWord(word);
           if (validationStatus.wordAlreadyExists) {
@@ -861,9 +882,9 @@ export class BoardComponent implements OnInit, OnDestroy {
       }
     }
 // checking if the cols contain any valid word
-    for (let col = 0; col < BOARD_SIZE; col++) {
-      for (let i = 0; i <= BOARD_SIZE - 3; i++) {
-        for (let j = i + 3; j <= BOARD_SIZE; j++) {
+    for (let col = 0; col < this.selectedBoardSize; col++) {
+      for (let i = 0; i <= this.selectedBoardSize - 3; i++) {
+        for (let j = i + 3; j <= this.selectedBoardSize; j++) {
           let word: string = this.constructWordFromIndices(this.board, i, col, j, col);
           let validationStatus = this.validateWord(word);
           if (validationStatus.wordAlreadyExists) {
@@ -890,7 +911,7 @@ export class BoardComponent implements OnInit, OnDestroy {
 
   colorDuplicateCharacters(board: Cell[][], char: string, index: number, isRow: boolean) {
     if (isRow) {
-      for (let i = 0; i < BOARD_SIZE; i++) {
+      for (let i = 0; i < this.selectedBoardSize; i++) {
         if (board[index][i].letter === char) {
           board[index][i].background = board[index][i].isLocked
             ? CELL_COLOR.DUPLICATE_CHAR_CELL_LOCKED
@@ -898,7 +919,7 @@ export class BoardComponent implements OnInit, OnDestroy {
         }
       }
     } else {
-      for (let i = 0; i < BOARD_SIZE; i++) {
+      for (let i = 0; i < this.selectedBoardSize; i++) {
         if (board[i][index].letter === char) {
           board[i][index].background = board[i][index].isLocked
             ? CELL_COLOR.DUPLICATE_CHAR_CELL_LOCKED
@@ -1077,13 +1098,14 @@ export class BoardComponent implements OnInit, OnDestroy {
   }
 
   fillTheBoardWithAWord(word: string) {
-    let randomIndices = getAListOfRandomIndicesDistributedUniformly(BOARD_SIZE, NUM_OF_PREFILLED_CELLS);
-    for (let i = 0; i < NUM_OF_PREFILLED_CELLS; i++) {
-      let row = Math.floor(randomIndices[i] / BOARD_SIZE);
-      let col = randomIndices[i] % BOARD_SIZE;
+    const numPrefilled = getCurrentNumPrefilledCells();
+    let randomIndices = getAListOfRandomIndicesDistributedUniformly(this.selectedBoardSize, numPrefilled);
+    for (let i = 0; i < numPrefilled; i++) {
+      let row = Math.floor(randomIndices[i] / this.selectedBoardSize);
+      let col = randomIndices[i] % this.selectedBoardSize;
       let randomLetterIndex = this.generateARandomNumber(0, word.length - 1);
       while(this.hasDuplicateInRowOrColumn(row, col, word[randomLetterIndex])){
-        randomLetterIndex = this.generateARandomNumber(0, word.length - 1);      
+        randomLetterIndex = this.generateARandomNumber(0, word.length - 1);
       }
       this.board[row][col].letter = word[randomLetterIndex];
       this.board[row][col].isLocked = true;
@@ -1118,8 +1140,8 @@ export class BoardComponent implements OnInit, OnDestroy {
   }
 
   setDefaultColors() {
-    for (let i = 0; i < BOARD_SIZE; i++) {
-      for (let j = 0; j < BOARD_SIZE; j++) {
+    for (let i = 0; i < this.selectedBoardSize; i++) {
+      for (let j = 0; j < this.selectedBoardSize; j++) {
         if (!this.board[i][j].isLocked) {
           if (this.board[i][j].isActive) {
             this.board[i][j].background = CELL_COLOR.ACTIVE_CELL;
@@ -1201,12 +1223,12 @@ export class BoardComponent implements OnInit, OnDestroy {
     // check in row
     let countInRow = 0;
     let countInCol = 0;
-    for(let i=0; i< BOARD_SIZE; i++){
+    for(let i=0; i< this.selectedBoardSize; i++){
       if(this.board[row][i].letter === letter){
         countInRow += 1;
       }
     }
-    for(let i=0; i< BOARD_SIZE; i++){
+    for(let i=0; i< this.selectedBoardSize; i++){
       if(this.board[i][col].letter === letter){
         countInCol += 1;
       }
@@ -1355,11 +1377,13 @@ export class BoardComponent implements OnInit, OnDestroy {
           this.clearFocusedCell();
           break;
         default:
-          // Letter key input (A-Z) — accept any letter, not just those in the
-          // difficulty's letter set. The letter set is for puzzle generation only.
+          // Letter key input (A-Z) — only accept letters in the valid letters pool
           if (/^[a-zA-Z]$/.test(event.key)) {
-            event.preventDefault();
-            this.fillFocusedCell(event.key);
+            const letter = event.key.toUpperCase();
+            if (this.validLetters.has(letter)) {
+              event.preventDefault();
+              this.fillFocusedCell(letter);
+            }
           }
       }
     }

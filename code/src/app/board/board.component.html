@@ -71,8 +71,8 @@
                 {{ size }}x{{ size }}
             </button>
         </div>
-        <div class="controls-divider"></div>
-        <div class="difficulty-options">
+        <div class="controls-divider" *ngIf="selectedBoardSize === 9"></div>
+        <div class="difficulty-options" *ngIf="selectedBoardSize === 9">
             <button *ngFor="let diff of availableDifficulties"
                     class="difficulty-btn"
                     [class.active]="diff === selectedDifficulty"
@@ -94,7 +94,6 @@
 
     <div [ngClass]="'board'" [class.disable-user-action]="disableUserAction"
         [class.board-5x5]="selectedBoardSize === 5"
-        [class.board-7x7]="selectedBoardSize === 7"
         [class.board-9x9]="selectedBoardSize === 9"
         [class.completion-animation]="showCompletionAnimation"
         role="grid"
@@ -162,6 +161,7 @@
 
     <app-virtual-keyboard
         [disabled]="disableUserAction"
+        [validLetters]="validLetters"
         (letterPress)="onVirtualKeyPress($event)"
         (backspacePress)="onVirtualBackspace()">
     </app-virtual-keyboard>

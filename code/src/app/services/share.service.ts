@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 
 export interface ShareData {
   boardSize: number;
-  difficulty: string;
+  difficulty: string | null;
   timeTaken: string;
   board: { letter: string; isLocked: boolean }[][];
 }
@@ -135,8 +135,8 @@ wordsudoku.xyz`;
   /**
    * Capitalize difficulty string
    */
-  private capitalizeDifficulty(difficulty: string): string {
-    if (!difficulty) return '';
+  private capitalizeDifficulty(difficulty: string | null): string {
+    if (!difficulty) return 'Standard';
     return difficulty.charAt(0).toUpperCase() + difficulty.slice(1).toLowerCase();
   }
 }

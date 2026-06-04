@@ -14,7 +14,7 @@ export class StatsComponent implements OnInit {
   boardSizes = BOARD_SIZES;
   difficulties = DIFFICULTY_LEVELS;
   showResetConfirm = false;
-  
+
   difficultyLabels: Record<Difficulty, string> = {
     [Difficulty.Easy]: 'Easy',
     [Difficulty.Medium]: 'Medium',
@@ -45,11 +45,11 @@ export class StatsComponent implements OnInit {
     return this.stats?.solvedBySize[size] || 0;
   }
 
-  getAverageTime(boardSize: number, difficulty: Difficulty): string {
+  getAverageTime(boardSize: number, difficulty: Difficulty | null): string {
     return this.statsService.getAverageTime(boardSize, difficulty);
   }
 
-  getBestTime(boardSize: number, difficulty: Difficulty): string {
+  getBestTime(boardSize: number, difficulty: Difficulty | null): string {
     return this.statsService.getBestTime(boardSize, difficulty);
   }
 
@@ -59,6 +59,10 @@ export class StatsComponent implements OnInit {
 
   getCurrentStreak(): number {
     return this.statsService.getCurrentStreak();
+  }
+
+  is9x9Size(size: number): boolean {
+    return size === 9;
   }
 
   onResetStats(): void {

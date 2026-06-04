@@ -4,7 +4,7 @@
                 type="button"
                 class="kb-key"
                 [class.kb-key--pressed]="pressedKey === letter"
-                [disabled]="disabled"
+                [disabled]="disabled || !isLetterEnabled(letter)"
                 (mousedown)="onLetterClick(letter, $event)"
                 (touchstart)="onLetterClick(letter, $any($event))"
                 [attr.aria-label]="'Letter ' + letter">

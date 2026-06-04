@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { Cell } from '../model';
-import { BOARD_SIZE } from '../constants';
 
 export interface Conflict {
   type: 'duplicate' | 'word';
@@ -29,30 +28,30 @@ export class ConflictDetectionService {
    * Type A: Letter repeated in same row or column
    * Type B: Real word formed in any row or column (including reversed)
    */
-  detectAllConflicts(board: Cell[][]): ConflictDetectionResult {
+  detectAllConflicts(board: Cell[][], boardSize: number): ConflictDetectionResult {
     const conflicts: Conflict[] = [];
 
     // Check for duplicates in rows
-    for (let row = 0; row < BOARD_SIZE; row++) {
-      const rowConflicts = this.checkRowForDuplicates(board, row);
+    for (let row = 0; row < boardSize; row++) {
+      const rowConflicts = this.checkRowForDuplicates(board, row, boardSize);
       conflicts.push(...rowConflicts);
     }
 
     // Check for duplicates in columns
-    for (let col = 0; col < BOARD_SIZE; col++) {
-      const colConflicts = this.checkColumnForDuplicates(board, col);
+    for (let col = 0; col < boardSize; col++) {
+      const colConflicts = this.checkColumnForDuplicates(board, col, boardSize);
       conflicts.push(...colConflicts);
     }
 
     // Check for real words in rows
-    for (let row = 0; row < BOARD_SIZE; row++) {
-      const rowWordConflicts = this.checkRowForWords(board, row);
+    for (let row = 0; row < boardSize; row++) {
+      const rowWordConflicts = this.checkRowForWords(board, row, boardSize);
       conflicts.push(...rowWordConflicts);
     }
 
     // Check for real words in columns
-    for (let col = 0; col < BOARD_SIZE; col++) {
-      const colWordConflicts = this.checkColumnForWords(board, col);
+    for (let col = 0; col < boardSize; col++) {
+      const colWordConflicts = this.checkColumnForWords(board, col, boardSize);
       conflicts.push(...colWordConflicts);
     }
 
@@ -65,9 +64,9 @@ export class ConflictDetectionService {
   /**
    * Get all cells that are part of any conflict
    */
-  getConflictCells(board: Cell[][]): Set<string> {
+  getConflictCells(board: Cell[][], boardSize: number): Set<string> {
     const conflictCells = new Set<string>();
-    const result = this.detectAllConflicts(board);
+    const result = this.detectAllConflicts(board, boardSize);
 
     for (const conflict of result.conflicts) {
       for (const cell of conflict.cells) {
@@ -83,11 +82,11 @@ export class ConflictDetectionService {
    * Used for live in-progress feedback so word formations don't trigger alerts
    * until the board is fully filled.
    */
-  getDuplicateConflictCells(board: Cell[][]): Set<string> {
+  getDuplicateConflictCells(board: Cell[][], boardSize: number): Set<string> {
     const conflictCells = new Set<string>();
 
-    for (let row = 0; row < BOARD_SIZE; row++) {
-      const rowConflicts = this.checkRowForDuplicates(board, row);
+    for (let row = 0; row < boardSize; row++) {
+      const rowConflicts = this.checkRowForDuplicates(board, row, boardSize);
       for (const conflict of rowConflicts) {
         for (const cell of conflict.cells) {
           conflictCells.add(`${cell.row},${cell.col}`);
@@ -95,8 +94,8 @@ export class ConflictDetectionService {
       }
     }
 
-    for (let col = 0; col < BOARD_SIZE; col++) {
-      const colConflicts = this.checkColumnForDuplicates(board, col);
+    for (let col = 0; col < boardSize; col++) {
+      const colConflicts = this.checkColumnForDuplicates(board, col, boardSize);
       for (const conflict of colConflicts) {
         for (const cell of conflict.cells) {
           conflictCells.add(`${cell.row},${cell.col}`);
@@ -110,11 +109,11 @@ export class ConflictDetectionService {
   /**
    * Check a specific row for duplicate letters
    */
-  private checkRowForDuplicates(board: Cell[][], row: number): Conflict[] {
+  private checkRowForDuplicates(board: Cell[][], row: number, boardSize: number): Conflict[] {
     const conflicts: Conflict[] = [];
     const letterPositions: Map<string, { row: number; col: number }[]> = new Map();
 
-    for (let col = 0; col < BOARD_SIZE; col++) {
+    for (let col = 0; col < boardSize; col++) {
       const letter = board[row][col].letter.toUpperCase();
       if (letter) {
         if (!letterPositions.has(letter)) {
@@ -141,11 +140,11 @@ export class ConflictDetectionService {
   /**
    * Check a specific column for duplicate letters
    */
-  private checkColumnForDuplicates(board: Cell[][], col: number): Conflict[] {
+  private checkColumnForDuplicates(board: Cell[][], col: number, boardSize: number): Conflict[] {
     const conflicts: Conflict[] = [];
     const letterPositions: Map<string, { row: number; col: number }[]> = new Map();
 
-    for (let row = 0; row < BOARD_SIZE; row++) {
+    for (let row = 0; row < boardSize; row++) {
       const letter = board[row][col].letter.toUpperCase();
       if (letter) {
         if (!letterPositions.has(letter)) {
@@ -172,12 +171,12 @@ export class ConflictDetectionService {
   /**
    * Check a specific row for real words (length >= 3)
    */
-  private checkRowForWords(board: Cell[][], row: number): Conflict[] {
+  private checkRowForWords(board: Cell[][], row: number, boardSize: number): Conflict[] {
     const conflicts: Conflict[] = [];
 
     // Check left-to-right
-    for (let startCol = 0; startCol <= BOARD_SIZE - 3; startCol++) {
-      for (let endCol = startCol + 3; endCol <= BOARD_SIZE; endCol++) {
+    for (let startCol = 0; startCol <= boardSize - 3; startCol++) {
+      for (let endCol = startCol + 3; endCol <= boardSize; endCol++) {
         const word = this.constructWordFromCells(board, row, startCol, row, endCol - 1);
         const validation = this.validateWord(word);
         if (validation.isRealWord) {
@@ -197,12 +196,12 @@ export class ConflictDetectionService {
   /**
    * Check a specific column for real words (length >= 3)
    */
-  private checkColumnForWords(board: Cell[][], col: number): Conflict[] {
+  private checkColumnForWords(board: Cell[][], col: number, boardSize: number): Conflict[] {
     const conflicts: Conflict[] = [];
 
     // Check top-to-bottom
-    for (let startRow = 0; startRow <= BOARD_SIZE - 3; startRow++) {
-      for (let endRow = startRow + 3; endRow <= BOARD_SIZE; endRow++) {
+    for (let startRow = 0; startRow <= boardSize - 3; startRow++) {
+      for (let endRow = startRow + 3; endRow <= boardSize; endRow++) {
         const word = this.constructWordFromCells(board, startRow, col, endRow - 1, col);
         const validation = this.validateWord(word);
         if (validation.isRealWord) {

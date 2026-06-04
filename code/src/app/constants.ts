@@ -1,84 +1,25 @@
-export enum Difficulty {
-    Easy = 'easy',
-    Medium = 'medium',
-    Hard = 'hard'
-}
+import {
+    BOARD_SIZES as CONFIG_BOARD_SIZES,
+    BOARD_SIZE_CONFIG,
+    BoardSize,
+    DIFFICULTIES as CONFIG_DIFFICULTIES,
+    DIFFICULTY_KNOB_CONFIG,
+    Difficulty,
+    GameConfig,
+    getPlayerPool,
+    getPrefillCellCount,
+    selectLettersForBoard,
+    TIER_1,
+    TIER_2,
+    TIER_3
+} from './config/game-config';
 
-export const DIFFICULTY_LEVELS = [Difficulty.Easy, Difficulty.Medium, Difficulty.Hard];
-
-export const BOARD_SIZES = [5, 7, 9];
-
-// Pre-filled cell counts based on board size and difficulty
-export const DIFFICULTY_PREFILLED_CONFIG: Record<Difficulty, Record<number, number>> = {
-    [Difficulty.Easy]: {
-        5: 12,
-        7: 22,
-        9: 35
-    },
-    [Difficulty.Medium]: {
-        5: 9,
-        7: 16,
-        9: 26
-    },
-    [Difficulty.Hard]: {
-        5: 6,
-        7: 11,
-        9: 18
-    }
-};
-
-// Letter sets for puzzle generation based on difficulty
-// Easy: avoid letters that form many common words (A-E-I-N-S-T)
-// Medium: balanced random selection
-// Hard: letters with more "near-word" risk
-export const DIFFICULTY_LETTER_SETS: Record<Difficulty, string[]> = {
-    [Difficulty.Easy]: [
-        "BDFGHLMO",    // Hard consonants, fewer words
-        "CDFKMPQR",    // More uncommon combinations
-        "BGHJKNPQ",    // Avoiding vowels early
-        "DFGKLMPW",    // Complex starting combos
-    ],
-    [Difficulty.Medium]: [
-        "AEIOURSTLN",  // Original balanced set
-        "AEIOURSTNI",  // Slightly modified
-        "AEIOURSTLC",  // Different ending
-        "AEIOURSTLM",  // Another variant
-    ],
-    [Difficulty.Hard]: [
-        "AEIOURSFGP",  // Mix vowels with tricky consonants
-        "AEIOURTZBC",  // Z and other challenging letters
-        "AEIOURQXJK",  // Q and X for complexity
-        "AEIOURVYHW",  // Y and W variations
-    ]
-};
-
-export const BOARD_SIZE_CONFIGS: Record<number, { initialWord: string }> = {
-    5: { initialWord: "AETIONSUEI" },
-    7: { initialWord: "AEIOURSTLIN" },
-    9: { initialWord: "AEIOURSTLNCGD" },
-};
-
-export let BOARD_SIZE = 5;
-export let DIFFICULTY = Difficulty.Medium;
-export let NUM_OF_PREFILLED_CELLS = 9;
-export let INITIALIZING_WORD = "AETIONSUEI";
-
-export function updateBoardConfig(size: number, difficulty: Difficulty = Difficulty.Medium) {
-    BOARD_SIZE = size;
-    DIFFICULTY = difficulty;
-    NUM_OF_PREFILLED_CELLS = DIFFICULTY_PREFILLED_CONFIG[difficulty][size];
-    INITIALIZING_WORD = getLetterSetForDifficulty(difficulty);
-}
-
-export function getLetterSetForDifficulty(difficulty: Difficulty): string {
-    const sets = DIFFICULTY_LETTER_SETS[difficulty];
-    return sets[Math.floor(Math.random() * sets.length)];
-}
+export { Difficulty, BoardSize, TIER_1, TIER_2, TIER_3 };
+export const DIFFICULTY_LEVELS = CONFIG_DIFFICULTIES;
+export const BOARD_SIZES = CONFIG_BOARD_SIZES;
 
 export type ThemeName = 'green' | 'blue' | 'neon' | 'dark';
-
 export const THEME_NAMES: ThemeName[] = ['green', 'blue', 'neon', 'dark'];
-
 export const THEME_LABELS: Record<ThemeName, string> = {
     green: 'Forest',
     blue: 'Ocean',
@@ -92,8 +33,6 @@ interface ThemePalette {
     inactiveCell: string;
     duplicateCharCell: string;
     duplicateCharCellLocked: string;
-    // Five-stop gradient used for highlighting a discovered word, from the
-    // "anchor" end (most saturated) to the trailing end (faded).
     wordGradientStops: string[];
 }
 
@@ -189,21 +128,6 @@ function buildGradient(stops: string[]): Record<string, string> {
     return out;
 }
 
-export function applyThemePalette(name: ThemeName): void {
-    const palette = THEME_PALETTES[name];
-    CELL_COLOR.BLOCKED_CELL = palette.blockedCell;
-    CELL_COLOR.ACTIVE_CELL = palette.activeCell;
-    CELL_COLOR.INACTIVE_CELL = palette.inactiveCell;
-    CELL_COLOR.DUPLICATE_CHAR_CELL = palette.duplicateCharCell;
-    CELL_COLOR.DUPLICATE_CHAR_CELL_LOCKED = palette.duplicateCharCellLocked;
-    const grad = buildGradient(palette.wordGradientStops);
-    // Wipe and repopulate so previous theme keys don't linger.
-    for (const k of Object.keys(GRADIENT)) {
-        delete GRADIENT[k];
-    }
-    Object.assign(GRADIENT, grad);
-}
-
 export const GRADIENT: Record<string, string> = {
     leftToRight_0: `linear-gradient(90deg, rgba(255,137,90,1) 0%, rgba(255,148,106,1) 100%)`,
     leftToRight_1: `linear-gradient(90deg, rgba(255,148,106,1) 0%, rgba(254,167,134,1) 100%)`,
@@ -255,11 +179,71 @@ export const CELL_COLOR: any = {
 }
 
 export const WORDS_FILE_PATH = 'assets/final_words.txt';
-
 export const FAILURE_INFO = {
     DUPLICATE: "duplicate",
     WORD_EXISTS: "wordExists"
 }
-
 export const START_TIME_TEXT = "00:00";
 export const BEST_SCORE_DEFAULT_STRING = "-";
+
+export let BOARD_SIZE: BoardSize = 5;
+export let DIFFICULTY: Difficulty | null = null;
+export let NUM_OF_PREFILLED_CELLS = 12;
+export let INITIALIZING_WORD = "";
+export let PLAYER_POOL: Set<string> = new Set();
+
+export function updateBoardConfig(size: BoardSize, difficulty: Difficulty | null) {
+    BOARD_SIZE = size;
+
+    if (size === 5) {
+        DIFFICULTY = null;
+        const config = BOARD_SIZE_CONFIG[5];
+        NUM_OF_PREFILLED_CELLS = getPrefillCellCount(config.prefillCellRange);
+        const safeLetters = selectLettersForBoard({ tier1: 1, tier2: 2, tier3: 2 }, 5);
+        INITIALIZING_WORD = safeLetters.join('');
+        PLAYER_POOL = new Set(['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']);
+    } else {
+        DIFFICULTY = difficulty;
+        if (difficulty) {
+            const knobConfig = DIFFICULTY_KNOB_CONFIG[difficulty];
+            NUM_OF_PREFILLED_CELLS = getPrefillCellCount(knobConfig.prefillCellRange);
+            const letters = selectLettersForBoard(knobConfig.prefillLetterMix, 9);
+            INITIALIZING_WORD = letters.join('');
+            PLAYER_POOL = getPlayerPool(knobConfig.playerPoolRemoval);
+        }
+    }
+}
+
+export function getLetterSetForDifficulty(difficulty: Difficulty | null): string {
+    return INITIALIZING_WORD;
+}
+
+export function getCurrentBoardSize(): BoardSize {
+    return BOARD_SIZE;
+}
+
+export function getCurrentDifficulty(): Difficulty | null {
+    return DIFFICULTY;
+}
+
+export function getCurrentNumPrefilledCells(): number {
+    return NUM_OF_PREFILLED_CELLS;
+}
+
+export function getPlayerPoolLetters(): Set<string> {
+    return PLAYER_POOL;
+}
+
+export function applyThemePalette(name: ThemeName): void {
+    const palette = THEME_PALETTES[name];
+    CELL_COLOR.BLOCKED_CELL = palette.blockedCell;
+    CELL_COLOR.ACTIVE_CELL = palette.activeCell;
+    CELL_COLOR.INACTIVE_CELL = palette.inactiveCell;
+    CELL_COLOR.DUPLICATE_CHAR_CELL = palette.duplicateCharCell;
+    CELL_COLOR.DUPLICATE_CHAR_CELL_LOCKED = palette.duplicateCharCellLocked;
+    const grad = buildGradient(palette.wordGradientStops);
+    for (const k of Object.keys(GRADIENT)) {
+        delete GRADIENT[k];
+    }
+    Object.assign(GRADIENT, grad);
+}

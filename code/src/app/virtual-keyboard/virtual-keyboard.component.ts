@@ -7,6 +7,7 @@ import { Component, EventEmitter, Input, OnDestroy, Output } from '@angular/core
 })
 export class VirtualKeyboardComponent implements OnDestroy {
   @Input() disabled: boolean = false;
+  @Input() validLetters: Set<string> = new Set();
   @Output() letterPress = new EventEmitter<string>();
   @Output() backspacePress = new EventEmitter<void>();
 
@@ -23,9 +24,14 @@ export class VirtualKeyboardComponent implements OnDestroy {
     this.clearPressCueTimeout();
   }
 
+  isLetterEnabled(letter: string): boolean {
+    if (this.validLetters.size === 0) return true;
+    return this.validLetters.has(letter);
+  }
+
   onLetterClick(letter: string, event: MouseEvent): void {
     event.preventDefault();
-    if (this.disabled) return;
+    if (this.disabled || !this.isLetterEnabled(letter)) return;
     this.showPressCue(letter);
     this.letterPress.emit(letter);
   }

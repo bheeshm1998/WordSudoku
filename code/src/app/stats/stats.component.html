@@ -41,9 +41,20 @@
         </div>
       </div>
 
-      <!-- Best Times Table -->
+      <!-- Best Times for 5x5 -->
       <div class="stats-section">
-        <h3>Your Best Scores</h3>
+        <h3>5×5 Best Time</h3>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span class="stat-label">Best Time</span>
+            <span class="stat-value">{{ getBestTime(5, null) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Best Times Table for 9x9 -->
+      <div class="stats-section" *ngIf="is9x9Size(9)">
+        <h3>9×9 Best Scores</h3>
         <div class="best-times-table-wrap">
           <table class="best-times-table">
             <thead>
@@ -53,9 +64,9 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let size of boardSizes">
-                <th class="row-label">{{ size }}×{{ size }}</th>
-                <td *ngFor="let difficulty of difficulties">{{ getBestTime(size, difficulty) }}</td>
+              <tr>
+                <th class="row-label">9×9</th>
+                <td *ngFor="let difficulty of difficulties">{{ getBestTime(9, difficulty) }}</td>
               </tr>
             </tbody>
           </table>

@@ -3,7 +3,7 @@ import { Difficulty, BOARD_SIZES } from '../constants';
 
 export interface SolveRecord {
   boardSize: number;
-  difficulty: Difficulty;
+  difficulty: Difficulty | null;
   timeTaken: string; // Format: "MM:SS.s"
   completedAt: string; // ISO date string
 }
@@ -66,8 +66,8 @@ export class StatsService {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(this.stats));
   }
 
-  private getConfigKey(boardSize: number, difficulty: Difficulty): string {
-    return `${boardSize}_${difficulty}`;
+  private getConfigKey(boardSize: number, difficulty: Difficulty | null): string {
+    return `${boardSize}_${difficulty || 'standard'}`;
   }
 
   private parseTimeToMs(timeStr: string): number {
@@ -90,7 +90,7 @@ export class StatsService {
     return yesterday.toISOString().split('T')[0];
   }
 
-  recordSolve(boardSize: number, difficulty: Difficulty, timeTaken: string): void {
+  recordSolve(boardSize: number, difficulty: Difficulty | null, timeTaken: string): void {
     const configKey = this.getConfigKey(boardSize, difficulty);
     const timeMs = this.parseTimeToMs(timeTaken);
     const today = this.getTodayDateString();
@@ -149,7 +149,7 @@ export class StatsService {
     return { ...this.stats };
   }
 
-  getAverageTime(boardSize: number, difficulty: Difficulty): string {
+  getAverageTime(boardSize: number, difficulty: Difficulty | null): string {
     const configKey = this.getConfigKey(boardSize, difficulty);
     const times = this.stats.solveTimesByConfig[configKey];
     
@@ -162,7 +162,7 @@ export class StatsService {
     return this.formatMsToTime(avgMs);
   }
 
-  getBestTime(boardSize: number, difficulty: Difficulty): string {
+  getBestTime(boardSize: number, difficulty: Difficulty | null): string {
     const configKey = this.getConfigKey(boardSize, difficulty);
     return this.stats.bestTimesByConfig[configKey] || '-';
   }
