@@ -58,10 +58,10 @@ export class BoardComponent implements OnInit, OnDestroy {
   showNewBestIndicator: boolean = false;
 
   availableBoardSizes = BOARD_SIZES;
-  selectedBoardSize: BoardSize = 5;
+  selectedBoardSize: BoardSize = 9;
   
   availableDifficulties: Difficulty[] = [];
-  selectedDifficulty: Difficulty | null = null;
+  selectedDifficulty: Difficulty | null = Difficulty.Medium;
 
   private currentGameId: string | null = null;
 
@@ -1300,11 +1300,7 @@ initializeTheBoard() {
   }
 
   private shouldStartNewGame(persistedState: any): boolean {
-    if (!persistedState) return true;
-    if (persistedState.boardSize !== this.selectedBoardSize) return true;
-    if (persistedState.difficulty !== this.selectedDifficulty) return true;
-    if (persistedState.solveStatus === 'SUCCESS') return true;
-    return false;
+    return true;
   }
 
   private restoreGameState(persistedState: any): void {
