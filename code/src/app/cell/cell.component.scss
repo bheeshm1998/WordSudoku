@@ -287,10 +287,7 @@
     background: transparent;
 }
 
-.cell-button:focus-visible {
-    outline: 3px solid var(--cell-active-border);
-    outline-offset: 2px;
-}
+// Removed focus-visible outline to prevent extra border when typing
 
 // Neon theme: glow on locked + active cells
 :host-context(body[data-theme="neon"]) {
