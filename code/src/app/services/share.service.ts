@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import html2canvas from 'html2canvas';
 
 export interface ShareData {
   boardSize: number;
@@ -11,6 +12,16 @@ export interface ShareData {
   providedIn: 'root'
 })
 export class ShareService {
+
+  /**
+   * Generate share text with custom message
+   */
+  generateShareTextWithMessage(data: ShareData): string {
+    const timeFormatted = data.timeTaken.split('.')[0];
+    return `Hey explore this sudoku game. Test your English vocabulary skills. I solved this board in ${timeFormatted}.
+
+wordsudoku.xyz`;
+  }
 
   /**
    * Generate the Wordle-style text share content
@@ -72,6 +83,67 @@ wordsudoku.xyz`;
    */
   isShareSupported(): boolean {
     return typeof navigator !== 'undefined' && !!navigator.share;
+  }
+
+  /**
+   * Capture the board element as a canvas/image
+   */
+  async captureBoardAsCanvas(boardElement: HTMLElement): Promise<string | null> {
+    try {
+      const canvas = await html2canvas(boardElement, {
+        backgroundColor: null,
+        scale: 2,
+        logging: false,
+        useCORS: true
+      });
+      return canvas.toDataURL('image/png');
+    } catch (err) {
+      console.error('Failed to capture board:', err);
+      return null;
+    }
+  }
+
+  /**
+   * Share using native share sheet (mobile) with image
+   */
+  async shareViaNativeWithImage(shareData: { title: string; text: string; imageBase64: string }): Promise<boolean> {
+    if (!this.isShareSupported()) {
+      return false;
+    }
+
+    try {
+      const blob = this.dataURLtoBlob(shareData.imageBase64);
+      const file = new File([blob], 'word-sudoku-board.png', { type: 'image/png' });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: shareData.title,
+          text: shareData.text,
+          files: [file]
+        });
+        return true;
+      }
+
+      await navigator.share({
+        title: shareData.title,
+        text: shareData.text
+      });
+      return true;
+    } catch (err) {
+      console.log('Share cancelled or failed:', err);
+      return false;
+    }
+  }
+
+  private dataURLtoBlob(dataURL: string): Blob {
+    const byteString = atob(dataURL.split(',')[1]);
+    const mimeString = dataURL.split(',')[0].split(':')[1].split(';')[0];
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteString.length; i++) {
+      ia[i] = byteString.charCodeAt(i);
+    }
+    return new Blob([ab], { type: mimeString });
   }
 
   /**

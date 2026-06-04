@@ -1517,26 +1517,33 @@ initializeTheBoard() {
       board: this.board
     };
 
-    const shareText = this.shareService.generateShareTextWithGrid(shareData);
+    const shareText = this.shareService.generateShareTextWithMessage(shareData);
+    const boardElement = document.querySelector('.board') as HTMLElement;
 
-    // Try native share first (mobile), fall back to clipboard (desktop)
-    if (this.shareService.isShareSupported()) {
-      this.shareService.shareViaNative({
-        title: 'Word Sudoku',
-        text: shareText
+    if (boardElement && this.shareService.isShareSupported()) {
+      this.shareService.captureBoardAsCanvas(boardElement).then(imageData => {
+        if (imageData) {
+          this.shareService.shareViaNativeWithImage({
+            title: 'Word Sudoku',
+            text: shareText,
+            imageBase64: imageData
+          });
+        } else {
+          this.shareService.shareViaNative({
+            title: 'Word Sudoku',
+            text: shareText
+          });
+        }
       });
     } else {
-      // Desktop: copy to clipboard and show toast
       this.shareService.copyToClipboard(shareText).then(success => {
         if (success) {
           this.showCopiedToast = true;
           
-          // Clear any existing timeout
           if (this.toastTimeoutId) {
             clearTimeout(this.toastTimeoutId);
           }
           
-          // Auto-hide toast after 2 seconds
           this.toastTimeoutId = setTimeout(() => {
             this.showCopiedToast = false;
           }, 2000);
