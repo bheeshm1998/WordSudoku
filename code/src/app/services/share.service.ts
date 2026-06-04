@@ -18,7 +18,7 @@ export class ShareService {
    */
   generateShareTextWithMessage(data: ShareData): string {
     const timeFormatted = data.timeTaken.split('.')[0];
-    return `🔡 Just discovered the coolest twist on Sudoku. It tests your English vocabulary instead of numbers! I finished this board in ${timeFormatted}. Genuinely fun, give it a play and challenge you friends!
+    return `🔡 Just discovered the coolest twist on Sudoku. It tests your English vocabulary instead of numbers! I finished this board in ${timeFormatted}. Genuinely fun, give it a play and challenge your friends!
 
 wordsudoku.xyz`;
   }
