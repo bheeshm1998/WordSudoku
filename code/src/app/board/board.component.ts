@@ -1319,6 +1319,7 @@ initializeTheBoard() {
     this.intervalId = setInterval(() => {
       this.tickTimer();
     }, 500);
+    this.tickTimer();
   }
 
   // Keyboard shortcuts for undo/redo and cell navigation
