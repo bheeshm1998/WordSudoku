@@ -109,6 +109,11 @@ export class BoardComponent implements OnInit, OnDestroy {
   // Sound
   soundEnabled: boolean = false;
   private soundSubscription?: Subscription;
+  private audio = new Audio();
+
+  private static readonly SOUND_LETTER_INPUT = 'assets/sound-effects/bubble-pop-letter-input.mp3';
+  private static readonly SOUND_BOARD_COMPLETE = 'assets/sound-effects/board-complete.mp3';
+  private static readonly SOUND_CONFLICT = 'assets/sound-effects/error-pop-letter-conflict-valid-word.mp3';
 
   // Share functionality
   showCopiedToast: boolean = false;
@@ -226,35 +231,29 @@ export class BoardComponent implements OnInit, OnDestroy {
     }
   }
 
-  private playSuccessSound(): void {
+  private playSound(soundPath: string): void {
     if (!this.soundEnabled) return;
-    
+
     try {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-      
-      oscillator.type = 'sine';
-      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-      
-      // Play a pleasant success chord (C-E-G arpeggio)
-      const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
-      const duration = 0.15;
-      
-      notes.forEach((freq, index) => {
-        oscillator.frequency.setValueAtTime(freq, audioContext.currentTime + index * duration);
+      this.audio.src = soundPath;
+      this.audio.play().catch(e => {
+        console.warn('Could not play sound:', e);
       });
-      
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + notes.length * duration + 0.1);
-      
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + notes.length * duration + 0.2);
     } catch (e) {
-      console.warn('Could not play success sound:', e);
+      console.warn('Could not play sound:', e);
     }
+  }
+
+  private playLetterInputSound(): void {
+    this.playSound(BoardComponent.SOUND_LETTER_INPUT);
+  }
+
+  private playBoardCompleteSound(): void {
+    this.playSound(BoardComponent.SOUND_BOARD_COMPLETE);
+  }
+
+  private playConflictSound(): void {
+    this.playSound(BoardComponent.SOUND_CONFLICT);
   }
 
   private triggerCompletionAnimation(): void {
@@ -294,7 +293,7 @@ export class BoardComponent implements OnInit, OnDestroy {
     
     // Phase 5: Play success sound
     setTimeout(() => {
-      this.playSuccessSound();
+      this.playBoardCompleteSound();
     }, 200);
   }
   
@@ -693,9 +692,19 @@ initializeTheBoard() {
       newLetter: input
     });
 
+    // Play letter input sound if a letter was typed (not cleared)
+    if (input) {
+      this.playLetterInputSound();
+    }
+
     if (this.assistModeEnabled) {
       // Assist Mode: show real-time conflict feedback
       this.updateConflictHighlights();
+      // Play conflict sound if there are conflicts
+      const hasConflicts = this.board.some(row => row.some(cell => cell.hasConflict));
+      if (hasConflicts) {
+        this.playConflictSound();
+      }
     } else if (this.showStrictModeFeedback) {
       // Strict Mode: check if current conflict was fixed, advance to next
       const result = this.conflictDetectionService.detectAllConflicts(this.board, this.selectedBoardSize);
@@ -724,6 +733,7 @@ initializeTheBoard() {
         if (!this.assistModeEnabled) {
           // Strict Mode: start showing conflicts one at a time
           this.startStrictModeFeedback();
+          this.playConflictSound();
         }
       }
     } else {
@@ -1453,6 +1463,7 @@ initializeTheBoard() {
         this.onBoardSuccessfullCompletion();
       } else {
         this.startStrictModeFeedback();
+        this.playConflictSound();
       }
     }
   }
