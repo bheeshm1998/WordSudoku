@@ -116,6 +116,7 @@ export class BoardComponent implements OnInit, OnDestroy {
 
   // Success modal
   showSuccessModal: boolean = false;
+  successMessage: string = '';
 
   // Keyboard navigation state
   focusedRow: number = -1;
@@ -797,10 +798,24 @@ initializeTheBoard() {
     this.updateTheScoresData();
     this.recordSolveStats();
     this.triggerCompletionAnimation();
-    // Show the success modal after the completion animation has played
     setTimeout(() => {
+      this.successMessage = this.showNewBestIndicator
+        ? 'A New Personal Best!'
+        : this.getRandomSuccessMessage();
       this.showSuccessModal = true;
     }, this.selectedBoardSize * 50 + 800);
+  }
+
+  private getRandomSuccessMessage(): string {
+    const messages = [
+      'Completed!',
+      'Well Done!',
+      'You Did It!',
+      'Great Job!',
+      'Excellent Work!',
+      'Brilliant!'
+    ];
+    return messages[Math.floor(Math.random() * messages.length)];
   }
 
   onCloseSuccessModal(): void {

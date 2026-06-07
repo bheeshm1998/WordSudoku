@@ -176,7 +176,7 @@
 <div *ngIf="showSuccessModal" class="success-overlay" (click)="onCloseSuccessModal()">
     <div class="success-card" (click)="$event.stopPropagation()">
         <button class="success-close-btn" (click)="onCloseSuccessModal()" aria-label="Close">&#10005;</button>
-        <h2 class="success-title">SUCCESS</h2>
+        <h2 class="success-title">{{ successMessage }}</h2>
         <div class="success-time-block">
             <span class="success-time-label">Solved in</span>
             <span class="success-time-value">{{ timeTaken }}</span>
