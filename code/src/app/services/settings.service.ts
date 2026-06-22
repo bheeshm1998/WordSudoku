@@ -9,7 +9,7 @@ export interface Settings {
 
 const DEFAULT_SETTINGS: Settings = {
   assistModeEnabled: true,
-  soundEnabled: false,
+  soundEnabled: true,
   colorblindModeEnabled: false
 };
 

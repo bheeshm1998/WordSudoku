@@ -12,7 +12,7 @@ export class SettingsComponent implements OnInit {
   @Output() closeModal = new EventEmitter<void>();
 
   assistModeEnabled: boolean = true;
-  soundEnabled: boolean = false;
+  soundEnabled: boolean = true;
   colorblindModeEnabled: boolean = false;
 
   readonly themes = THEME_NAMES;
