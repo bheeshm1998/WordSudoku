@@ -676,9 +676,15 @@ initializeTheBoard() {
     this.solveStatus = "";
     this.failureReason = "";
     this.failureDetail = "";
+
+    // Snapshot pre-move conflict count before clearing highlights
+    const conflictCountBefore = this.assistModeEnabled
+      ? this.board.reduce((sum, r) => sum + r.filter(c => c.hasConflict).length, 0)
+      : 0;
+
     this.setDefaultColors();
     this.clearAllConflictHighlights();
-    
+
     // Record the change in history before applying the new value
     const previousLetter = this.board[row][col].letter;
     this.board[row][col].letter = input;
@@ -700,9 +706,9 @@ initializeTheBoard() {
     if (this.assistModeEnabled) {
       // Assist Mode: show real-time conflict feedback
       this.updateConflictHighlights();
-      // Play conflict sound if there are conflicts
-      const hasConflicts = this.board.some(row => row.some(cell => cell.hasConflict));
-      if (hasConflicts) {
+      // Play conflict sound only if this move introduced new conflicts
+      const conflictCountAfter = this.board.reduce((sum, r) => sum + r.filter(c => c.hasConflict).length, 0);
+      if (conflictCountAfter > conflictCountBefore) {
         this.playConflictSound();
       }
     } else if (this.showStrictModeFeedback) {
