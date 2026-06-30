@@ -3,6 +3,6 @@
   "target": {
     "namespace": "android_app",
     "package_name": "xyz.wordsudoku.app",
-    "sha256_cert_fingerprints": ["REPLACE_WITH_YOUR_SHA256_FINGERPRINT"]
+    "sha256_cert_fingerprints": ["8517E5A64A21D3469F057AA20EC546896CD1F191D03682C08E797D7CA903AE13"]
   }
 }]
