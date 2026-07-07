@@ -13,6 +13,11 @@ html, body {
    --------------------------------------------------------------------------- */
 
 body {
+    /* Typography */
+    --font-display: "Fraunces", "Georgia", "Times New Roman", serif;
+    --font-ui: "Nunito", sans-serif;
+    --font-numeric: "Space Grotesk", "Nunito", sans-serif;
+
     /* Default = Forest (green) */
     --bg-gradient: linear-gradient(135deg, #e8f5ec 0%, #d4ead9 45%, #b9dcc4 100%);
     --bg-accent-glow: radial-gradient(circle at 20% 0%, rgba(82, 180, 136, 0.18) 0%, transparent 55%),

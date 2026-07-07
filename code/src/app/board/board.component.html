@@ -2,63 +2,79 @@
 
     <div class="game-header">
         <div class="header-top">
-            <h1 class="game-title">Word Sudoku</h1>
-            <div class="header-timer">
-                <div class="timer-block">
-                    <span class="timer-label">BEST</span>
-                    <span class="timer-value best-time">{{ bestScore }}</span>
+            <div class="brand">
+                <div class="brand-tile" aria-hidden="true">W</div>
+                <div class="brand-text">
+                    <h1 class="game-title">Word Sudoku</h1>
+                    <span class="brand-tagline">Letters, not numbers</span>
                 </div>
-                <div class="timer-block">
-                    <span class="timer-label">TIME</span>
-                    <span class="timer-value current-time" [class.highlight]="showCompletionAnimation">{{ timeTaken }}</span>
-                </div>
-                <span *ngIf="showNewBestIndicator" class="new-best-indicator">New best!</span>
             </div>
             <div class="header-actions">
-                <div class="action-row">
-                    <button class="icon-btn" (click)="openStats()" title="Statistics" aria-label="Open statistics">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="18" y1="20" x2="18" y2="10"></line>
-                            <line x1="12" y1="20" x2="12" y2="4"></line>
-                            <line x1="6" y1="20" x2="6" y2="14"></line>
-                        </svg>
-                    </button>
-                    <button class="icon-btn" (click)="openSettings()" title="Settings" aria-label="Open settings">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="3"></circle>
-                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                        </svg>
-                    </button>
-                </div>
-                <div class="action-row">
-                    <button class="icon-btn"
-                            [class.disabled]="!canUndo"
-                            [disabled]="!canUndo"
-                            (click)="performUndo()"
-                            title="Undo (Ctrl+Z)"
-                            aria-label="Undo">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M3 7v6h6"></path>
-                            <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path>
-                        </svg>
-                    </button>
-                    <button class="icon-btn"
-                            [class.disabled]="!canRedo"
-                            [disabled]="!canRedo"
-                            (click)="performRedo()"
-                            title="Redo (Ctrl+Shift+Z)"
-                            aria-label="Redo">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 7v6h-6"></path>
-                            <path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7"></path>
-                        </svg>
-                    </button>
-                </div>
+                <button class="icon-btn"
+                        [class.disabled]="!canUndo"
+                        [disabled]="!canUndo"
+                        (click)="performUndo()"
+                        title="Undo (Ctrl+Z)"
+                        aria-label="Undo">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 7v6h6"></path>
+                        <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path>
+                    </svg>
+                </button>
+                <button class="icon-btn"
+                        [class.disabled]="!canRedo"
+                        [disabled]="!canRedo"
+                        (click)="performRedo()"
+                        title="Redo (Ctrl+Shift+Z)"
+                        aria-label="Redo">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 7v6h-6"></path>
+                        <path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7"></path>
+                    </svg>
+                </button>
+                <span class="actions-divider" aria-hidden="true"></span>
+                <button class="icon-btn" (click)="openStats()" title="Statistics" aria-label="Open statistics">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="20" x2="18" y2="10"></line>
+                        <line x1="12" y1="20" x2="12" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="14"></line>
+                    </svg>
+                </button>
+                <button class="icon-btn" (click)="openSettings()" title="Settings" aria-label="Open settings">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                </button>
             </div>
         </div>
-        <p class="game-rules">
-            Fill the board making sure no letter is repeated in a row or column and no continuous combination of letters should form a meaningful word
-        </p>
+        <div class="stat-strip">
+            <div class="stat-chip stat-chip--best" title="Best time for this board">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                    <path d="M4 22h16"></path>
+                    <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+                    <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+                    <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+                </svg>
+                <span class="stat-label">Best</span>
+                <span class="stat-value best-time">{{ bestScore }}</span>
+            </div>
+            <span class="stat-divider" aria-hidden="true"></span>
+            <div class="stat-chip stat-chip--time" title="Current time">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                <span class="stat-label">Time</span>
+                <span class="stat-value current-time" [class.highlight]="showCompletionAnimation">{{ timeTaken }}</span>
+            </div>
+            <span *ngIf="showNewBestIndicator" class="new-best-indicator">New best!</span>
+            <p class="game-rules">
+                No repeated letters in a row or column — and no run of letters may spell a real word, forwards or backwards.
+            </p>
+        </div>
     </div>
 
     <div class="controls-row">
